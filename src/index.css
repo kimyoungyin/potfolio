@@ -2,7 +2,6 @@
    v2.0 | 20110126
    License: none (public domain)
 */
-
 html,
 body,
 div,
@@ -131,6 +130,22 @@ table {
 :root {
     --bg_beige: #e9e6e0;
     --color_default: rgb(62, 62, 62);
+    --color_brown: rgb(88, 59, 31);
+
+    --size_h1: 33px;
+    --size_li: 16px;
+
+    --weight_light: 300;
+}
+
+a {
+    text-decoration: none;
+    outline: none;
+    color: var(--color_brown);
+}
+a:hover,
+a:active {
+    text-decoration: none;
 }
 
 body {

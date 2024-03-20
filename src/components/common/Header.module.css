@@ -1,0 +1,28 @@
+.header {
+    padding: 43.2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title > a {
+    font-size: var(--size_h1);
+}
+
+.navigation > ul {
+    display: flex;
+    gap: 28.8px;
+}
+
+.navigation > ul > li > a {
+    display: block;
+    height: 32px;
+    line-height: 32px;
+    font-size: var(--size_li);
+    font-weight: var(--weight_light);
+}
+
+.active,
+.active:hover {
+    border-bottom: 1px solid var(--color_brown);
+}
