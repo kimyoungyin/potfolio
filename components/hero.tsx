@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Github, Mail, Linkedin, ArrowRight, MapPin } from "lucide-react";
 import { heroProfile, heroIntro, heroContacts, heroCtas } from "@/content/hero";
@@ -18,11 +19,22 @@ export function Hero() {
                     style={{ animationFillMode: "forwards" }}
                 >
                     <div className="relative">
-                        <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-foreground/5 to-foreground/10 blur-xl" />
-                        <div className="relative h-28 w-28 overflow-hidden rounded-full border-2 border-border/50 bg-muted">
-                            <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-muted-foreground/20 select-none">
-                                {heroProfile.initials}
-                            </div>
+                        <div className="absolute -inset-1 rounded-full bg-linear-to-br from-foreground/5 to-foreground/10 blur-xl" />
+                        <div className="relative h-32 w-32 md:h-60 md:w-60 overflow-hidden rounded-full border-2 border-border/50 bg-muted">
+                            {heroProfile.photoUrl ? (
+                                <Image
+                                    src={heroProfile.photoUrl}
+                                    alt={`${heroProfile.name} 프로필 사진`}
+                                    fill
+                                    sizes="(min-width: 768px) 240px, 192px"
+                                    className="object-cover"
+                                    priority
+                                />
+                            ) : (
+                                <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-muted-foreground/20 select-none">
+                                    {heroProfile.initials}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -37,12 +49,12 @@ export function Hero() {
                             <MapPin className="h-3.5 w-3.5" />
                             <span>{heroProfile.location}</span>
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-emerald-600 dark:text-emerald-400">
+                            <span className="animate-pulse text-emerald-600 dark:text-emerald-400">
                                 {heroProfile.statusText}
                             </span>
                         </div>
-                        <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl">
-                            {heroProfile.title}
+                        <h1 className="font-bold tracking-tight text-foreground text-2xl md:text-3xl lg:text-4xl flex flex-col">
+                            {heroProfile.name} | {heroProfile.title}
                         </h1>
                     </div>
 
