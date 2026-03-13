@@ -5,14 +5,7 @@ import { useState, useEffect } from "react"
 import { Menu, X, Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
-
-const navItems = [
-  { name: "About", href: "#about" },
-  { name: "Skills", href: "#skills" },
-  { name: "Projects", href: "#projects" },
-  { name: "Blog", href: "#blog" },
-  { name: "Education", href: "#education" },
-]
+import { navItems } from "@/content/header"
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
