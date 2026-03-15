@@ -1,13 +1,17 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import useEmblaCarousel from "embla-carousel-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
     ExternalLink,
     Github,
     ChevronDown,
+    ChevronLeft,
+    ChevronRight,
     Lightbulb,
     Search,
     Wrench,
@@ -384,25 +388,129 @@ function CaseStudyContent({
     );
 }
 
+function ProjectImageCarousel({
+    images,
+    title,
+}: {
+    images: string[];
+    title: string;
+}) {
+    const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [canScrollPrev, setCanScrollPrev] = useState(false);
+    const [canScrollNext, setCanScrollNext] = useState(false);
+
+    const onSelect = useCallback(() => {
+        if (!emblaApi) return;
+        setCurrentIndex(emblaApi.selectedScrollSnap());
+        setCanScrollPrev(emblaApi.canScrollPrev());
+        setCanScrollNext(emblaApi.canScrollNext());
+    }, [emblaApi]);
+
+    useEffect(() => {
+        if (!emblaApi) return;
+        onSelect();
+        emblaApi.on("select", onSelect);
+        emblaApi.on("reInit", onSelect);
+        return () => {
+            emblaApi.off("select", onSelect);
+            emblaApi.off("reInit", onSelect);
+        };
+    }, [emblaApi, onSelect]);
+
+    if (images.length === 0) {
+        return (
+            <div className="relative w-full aspect-video overflow-hidden bg-muted/30 border-b border-border/50">
+                <div className="absolute inset-0 bg-linear-to-br from-foreground/5 to-transparent" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-6xl font-bold text-muted-foreground/10 select-none">
+                        {title.slice(0, 2).toUpperCase()}
+                    </span>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="relative w-full aspect-video overflow-hidden border-b border-border/50">
+            <div ref={emblaRef} className="h-full overflow-hidden">
+                <div className="flex h-full">
+                    {images.map((src, i) => (
+                        <div
+                            key={i}
+                            className="relative min-w-0 shrink-0 grow-0 basis-full h-full"
+                        >
+                            <Image
+                                src={src}
+                                alt={`${title} screenshot ${i + 1}`}
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 1024px) 100vw, 960px"
+                            />
+                        </div>
+                    ))}
+                </div>
+            </div>
+            {images.length > 1 && (
+                <>
+                    <button
+                        onClick={() => emblaApi?.scrollPrev()}
+                        disabled={!canScrollPrev}
+                        aria-label="Previous slide"
+                        className={cn(
+                            "absolute left-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-background/70 backdrop-blur-sm border border-border/50 flex items-center justify-center transition-opacity",
+                            !canScrollPrev && "opacity-30 cursor-not-allowed",
+                        )}
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <button
+                        onClick={() => emblaApi?.scrollNext()}
+                        disabled={!canScrollNext}
+                        aria-label="Next slide"
+                        className={cn(
+                            "absolute right-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-background/70 backdrop-blur-sm border border-border/50 flex items-center justify-center transition-opacity",
+                            !canScrollNext && "opacity-30 cursor-not-allowed",
+                        )}
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </button>
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                        {images.map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => emblaApi?.scrollTo(i)}
+                                aria-label={`Slide ${i + 1}`}
+                                className={cn(
+                                    "h-1.5 rounded-full transition-all",
+                                    i === currentIndex
+                                        ? "w-4 bg-foreground"
+                                        : "w-1.5 bg-foreground/40",
+                                )}
+                            />
+                        ))}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
+
 function ProjectCard({ project }: { project: Project }) {
     const cardRef = useRef<HTMLDivElement>(null);
 
     return (
         <article
             ref={cardRef}
-            className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card transition-all duration-300 hover:border-border scroll-m-16 "
+            className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card transition-all duration-300 hover:border-border scroll-m-16"
         >
-            <div className="flex flex-col lg:flex-row">
-                {/* Project Image Placeholder */}
-                <div className="relative flex h-48 items-center justify-center bg-muted/30 lg:h-auto lg:w-72 lg:shrink-0 overflow-hidden">
-                    <div className="absolute inset-0 bg-linear-to-br from-foreground/5 to-transparent" />
-                    <div className="relative text-5xl font-bold text-muted-foreground/10 select-none">
-                        {project.title.slice(0, 2).toUpperCase()}
-                    </div>
-                </div>
-
-                {/* Project Content */}
-                <div className="flex flex-1 flex-col gap-5 p-6 lg:p-8">
+            <div className="flex flex-col ">
+                {/* Image Carousel */}
+                <ProjectImageCarousel
+                    images={project.images}
+                    title={project.title}
+                />
+                <div className="p-6 lg:p-8">
                     {/* Header */}
                     <div className="flex flex-col gap-2">
                         <div className="flex flex-wrap items-center gap-3">
@@ -425,89 +533,94 @@ function ProjectCard({ project }: { project: Project }) {
                         </p>
                     </div>
 
-                    {/* Features */}
-                    <ul className="grid gap-1.5 text-sm text-muted-foreground sm:grid-cols-2">
-                        {project.features.map((feature, i) => (
-                            <li key={i} className="flex items-start gap-2">
-                                <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-foreground/30" />
-                                {feature}
-                            </li>
-                        ))}
-                    </ul>
+                    {/* Body */}
+                    <div className="pt-8 flex flex-col gap-8">
+                        {/* Features */}
+                        <ul className="grid gap-1.5 text-sm text-muted-foreground sm:grid-cols-2">
+                            {project.features.map((feature, i) => (
+                                <li key={i} className="flex items-start gap-2">
+                                    <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-foreground/30" />
+                                    {feature}
+                                </li>
+                            ))}
+                        </ul>
 
-                    {/* Tech Stack */}
-                    <div className="flex flex-wrap gap-2">
-                        {project.techStack.map((tech) => (
-                            <Badge
-                                key={tech}
-                                variant="secondary"
-                                className="rounded-full px-2.5 py-0.5 text-xs font-normal"
-                            >
-                                {tech}
-                            </Badge>
-                        ))}
-                    </div>
-
-                    {/* Challenges Section */}
-                    {project.challenges.length > 0 && (
-                        <div className="flex flex-col gap-3 pt-2">
-                            <div className="flex items-center gap-2">
-                                <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                                <h4 className="text-sm font-medium text-foreground">
-                                    Challenges ({project.challenges.length})
-                                </h4>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                {project.challenges.map((challenge, index) => (
-                                    <ChallengeItem
-                                        key={index}
-                                        challenge={challenge}
-                                        index={index}
-                                        scrollTargetRef={cardRef}
-                                    />
-                                ))}
-                            </div>
+                        {/* Tech Stack */}
+                        <div className="flex flex-wrap gap-2">
+                            {project.techStack.map((tech) => (
+                                <Badge
+                                    key={tech}
+                                    variant="secondary"
+                                    className="rounded-full px-2.5 py-0.5 text-xs font-normal"
+                                >
+                                    {tech}
+                                </Badge>
+                            ))}
                         </div>
-                    )}
 
-                    {/* Actions */}
-                    <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-border/50">
-                        {project.liveUrl && (
-                            <Button
-                                size="sm"
-                                variant="default"
-                                asChild
-                                className="rounded-full"
-                            >
-                                <Link
-                                    href={project.liveUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="gap-2"
-                                >
-                                    <ExternalLink className="h-3.5 w-3.5" />
-                                    Live Demo
-                                </Link>
-                            </Button>
+                        {/* Challenges Section */}
+                        {project.challenges.length > 0 && (
+                            <div className="flex flex-col gap-3 pt-2">
+                                <div className="flex items-center gap-2">
+                                    <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                                    <h4 className="text-sm font-medium text-foreground">
+                                        Challenges ({project.challenges.length})
+                                    </h4>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    {project.challenges.map(
+                                        (challenge, index) => (
+                                            <ChallengeItem
+                                                key={index}
+                                                challenge={challenge}
+                                                index={index}
+                                                scrollTargetRef={cardRef}
+                                            />
+                                        ),
+                                    )}
+                                </div>
+                            </div>
                         )}
-                        {project.githubUrl && (
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                asChild
-                                className="rounded-full"
-                            >
-                                <Link
-                                    href={project.githubUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="gap-2"
+
+                        {/* Actions */}
+                        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-border/50">
+                            {project.liveUrl && (
+                                <Button
+                                    size="sm"
+                                    variant="default"
+                                    asChild
+                                    className="rounded-full"
                                 >
-                                    <Github className="h-3.5 w-3.5" />
-                                    Source
-                                </Link>
-                            </Button>
-                        )}
+                                    <Link
+                                        href={project.liveUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="gap-2"
+                                    >
+                                        <ExternalLink className="h-3.5 w-3.5" />
+                                        Live Demo
+                                    </Link>
+                                </Button>
+                            )}
+                            {project.githubUrl && (
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    asChild
+                                    className="rounded-full"
+                                >
+                                    <Link
+                                        href={project.githubUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="gap-2"
+                                    >
+                                        <Github className="h-3.5 w-3.5" />
+                                        Source
+                                    </Link>
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

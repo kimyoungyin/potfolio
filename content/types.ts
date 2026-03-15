@@ -24,6 +24,7 @@ export interface Project {
     duration: string;
     teamSize: string;
     description: string;
+    images: string[];
     features: string[];
     techStack: string[];
     liveUrl: string;

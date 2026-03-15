@@ -1,15 +1,11 @@
 import type { CaseStudy, Project } from "./types";
 
 const placeholderCaseStudy: CaseStudy = {
-    problem:
-        "Problem placeholder — 실제 내용을 입력해주세요.",
-    investigation:
-        "Investigation placeholder — 실제 내용을 입력해주세요.",
-    solution:
-        "Solution placeholder — 실제 내용을 입력해주세요.",
+    problem: "Problem placeholder — 실제 내용을 입력해주세요.",
+    investigation: "Investigation placeholder — 실제 내용을 입력해주세요.",
+    solution: "Solution placeholder — 실제 내용을 입력해주세요.",
     implementation: {
-        description:
-            "Implementation placeholder — 실제 내용을 입력해주세요.",
+        description: "Implementation placeholder — 실제 내용을 입력해주세요.",
     },
     impact: {
         metrics: [
@@ -27,6 +23,7 @@ export const projects: Project[] = [
         teamSize: "팀 프로젝트 (6명)",
         description:
             "댓글 수집 및 AI 분석을 기반으로, 사용자의 추가 관여 없이 평판을 자동 수집·분석·관리하는 B2B 웹 서비스입니다.",
+        images: [],
         features: [
             "Feature placeholder 1",
             "Feature placeholder 2",
@@ -70,6 +67,7 @@ export const projects: Project[] = [
         teamSize: "개인 프로젝트 (100%)",
         description:
             '"다른 사람은 읽을 수 있지만, 업로드는 나만 가능한" 콘셉트의 기술 블로그로, 해시태그 기반 분류·검색을 직접 구현해 내가 쓴 글을 위키처럼 빠르게 다시 찾을 수 있도록 설계한 서비스입니다.',
+        images: [],
         features: [
             "Feature placeholder 1",
             "Feature placeholder 2",
@@ -112,6 +110,7 @@ export const projects: Project[] = [
         teamSize: "개인 프로젝트 (100%)",
         description:
             "군 복무 중 700~800권 규모 도서에 대한 검색 시스템이 없고 수기·분산 관리로 자료와 실제 위치가 어긋나던 문제를 해결하기 위해 개발한 도서 위치 안내 서비스입니다.",
+        images: [],
         features: [
             "Feature placeholder 1",
             "Feature placeholder 2",
