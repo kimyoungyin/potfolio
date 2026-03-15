@@ -1,18 +1,39 @@
 export const skillCategories: { name: string; skills: string[] }[] = [
     {
-        name: "Core",
-        skills: ["JavaScript", "TypeScript", "React", "Next.js"],
+        name: "Languages",
+        skills: ["TypeScript", "JavaScript (ES6+)"],
+    },
+    {
+        name: "Frontend",
+        skills: ["React", "Next.js (App Router)", "HTML5", "CSS3"],
     },
     {
         name: "Styling",
-        skills: ["Tailwind CSS", "CSS Modules", "Styled Components"],
+        skills: ["Tailwind CSS", "Styled Components", "shadcn/ui", "Radix UI"],
     },
     {
-        name: "Tools",
-        skills: ["Git", "GitHub", "Figma", "Vercel"],
+        name: "Data / State",
+        skills: ["TanStack Query (React Query)", "Zustand", "Redux Toolkit"],
     },
     {
-        name: "Other",
-        skills: ["REST APIs", "GraphQL", "Testing", "Accessibility"],
+        name: "Backend / DB",
+        skills: ["Supabase", "MySQL (AWS RDS)"],
+    },
+    {
+        name: "Testing",
+        skills: ["Vitest", "React Testing Library (RTL)", "Playwright"],
+    },
+    {
+        name: "DevOps / Tools",
+        skills: [
+            "Git",
+            "GitHub",
+            "Vercel",
+            "AWS S3",
+            "ESLint",
+            "Prettier",
+            "Husky",
+            "lint-staged",
+        ],
     },
 ] as const;

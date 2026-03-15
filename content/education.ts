@@ -22,32 +22,12 @@ export interface TrainingItem {
 export const educationList: EducationItem[] = [
     {
         type: "degree",
-        title: "Bachelor of Science in Computer Science",
-        institution: "State University",
-        period: "2019 - 2023",
-        description: "Focus on software engineering and web technologies",
+        title: "식품생명공학과 졸업",
+        institution: "동국대학교(서울)",
+        period: "2018.02 ~ 2023.07",
     },
-] as const;
+];
 
-export const certificationList: CertificationItem[] = [
-    {
-        title: "Meta Frontend Developer Professional Certificate",
-        issuer: "Coursera",
-        year: "2023",
-    },
-    {
-        title: "AWS Certified Cloud Practitioner",
-        issuer: "Amazon Web Services",
-        year: "2023",
-    },
-] as const;
+export const certificationList: CertificationItem[] = [];
 
-export const trainingList: TrainingItem[] = [
-    {
-        title: "Frontend Development Bootcamp",
-        organization: "CodeCamp",
-        period: "2023",
-        description:
-            "Intensive 12-week program focused on React and modern JavaScript",
-    },
-] as const;
+export const trainingList: TrainingItem[] = [];

@@ -27,7 +27,7 @@ export function Hero() {
                                     alt={`${heroProfile.name} 프로필 사진`}
                                     fill
                                     sizes="(min-width: 768px) 240px, 192px"
-                                    className="object-cover"
+                                    className="object-cover object-[50%_10%]"
                                     priority
                                 />
                             ) : (
@@ -71,30 +71,15 @@ export function Hero() {
                         style={{ animationFillMode: "forwards" }}
                     >
                         {heroContacts.map((contact) => {
-                            const Icon =
-                                contact.type === "email"
-                                    ? Mail
-                                    : contact.type === "github"
-                                      ? Github
-                                      : contact.type === "linkedin"
-                                        ? Linkedin
-                                        : Mail;
-
-                            const isExternal = contact.type !== "email";
-
                             return (
                                 <Link
                                     key={contact.label}
                                     href={contact.href}
-                                    target={isExternal ? "_blank" : undefined}
-                                    rel={
-                                        isExternal
-                                            ? "noopener noreferrer"
-                                            : undefined
-                                    }
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="group flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
                                 >
-                                    <Icon className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" />
+                                    <contact.icon className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" />
                                     {contact.label}
                                 </Link>
                             );

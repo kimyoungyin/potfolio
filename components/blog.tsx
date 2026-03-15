@@ -6,7 +6,7 @@ import { blogPosts } from "@/content/blog";
 
 export function Blog() {
     return (
-        <section id="blog" className="border-t border-border/50 bg-muted/30">
+        <section id="blog" className="border-t border-border bg-muted/30">
             <div className="mx-auto max-w-5xl px-6 py-24 md:py-28">
                 <div className="flex flex-col gap-16">
                     {/* Section Header */}
@@ -14,10 +14,6 @@ export function Blog() {
                         <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
                             Writing
                         </h2>
-                        <p className="text-muted-foreground max-w-lg">
-                            Thoughts on frontend development, performance
-                            optimization, and lessons learned
-                        </p>
                     </div>
 
                     {/* Blog Posts Grid */}

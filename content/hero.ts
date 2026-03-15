@@ -1,4 +1,4 @@
-import { Mail, Github, LucideIcon } from "lucide-react";
+import { Mail, Github, LucideIcon, BookOpenText } from "lucide-react";
 
 export const heroProfile = {
     initials: "YY",
@@ -16,7 +16,12 @@ const intro = [
 
 export const heroIntro = intro.join(" ");
 
-export type HeroContactType = "email" | "github" | "linkedin" | "other";
+export type HeroContactType =
+    | "email"
+    | "github"
+    | "linkedin"
+    | "blog"
+    | "other";
 
 export interface HeroContact {
     label: string;
@@ -37,6 +42,12 @@ export const heroContacts: HeroContact[] = [
         href: "https://github.com/kimyoungyin",
         type: "github",
         icon: Github,
+    },
+    {
+        label: "Blog",
+        href: "https://myblog-navy-kappa.vercel.app/",
+        type: "blog",
+        icon: BookOpenText,
     },
 ] as const;
 

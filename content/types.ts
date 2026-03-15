@@ -13,15 +13,20 @@ export interface CaseStudy {
     };
 }
 
+export interface Challenge {
+    title: string;
+    summary: string;
+    caseStudy: CaseStudy;
+}
+
 export interface Project {
     title: string;
     duration: string;
     teamSize: string;
     description: string;
     features: string[];
-    challengeSummary: string;
     techStack: string[];
     liveUrl: string;
     githubUrl: string;
-    caseStudy: CaseStudy;
+    challenges: Challenge[];
 }
