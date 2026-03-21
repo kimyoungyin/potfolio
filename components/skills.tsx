@@ -5,8 +5,8 @@ import { skillCategories } from "@/content/skills";
 
 export function Skills() {
     return (
-        <section id="skills" className="border-t border-border bg-muted/30">
-            <div className="mx-auto max-w-5xl px-6 py-24 md:py-28">
+        <section id="skills" className="border-t border-border bg-section-alt">
+            <div className="mx-auto max-w-5xl px-6 py-28 md:py-32">
                 <div className="flex flex-col gap-16">
                     {/* Section Header */}
                     <div className="flex flex-col gap-3">

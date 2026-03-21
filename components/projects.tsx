@@ -7,21 +7,7 @@ import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-    ExternalLink,
-    Github,
-    ChevronDown,
-    ChevronLeft,
-    ChevronRight,
-    Lightbulb,
-    Search,
-    Wrench,
-    Code2,
-    TrendingUp,
-    AlertCircle,
-    ChevronUp,
-    Network,
-} from "lucide-react";
+import { ExternalLink, Github, ChevronDown, ChevronLeft, ChevronRight, Lightbulb, Search, Wrench, Code as Code2, TrendingUp, CircleAlert as AlertCircle, ChevronUp, Network } from "lucide-react";
 
 const MermaidDiagram = dynamic(
     () => import("@/components/mermaid-diagram").then((m) => m.MermaidDiagram),
@@ -70,12 +56,12 @@ function ChallengeItem({
     };
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col rounded-xl border border-border bg-card/50 shadow-sm overflow-hidden">
             {/* Challenge Header */}
             <div
                 className={cn(
-                    "flex items-start gap-4 rounded-xl p-4 transition-all duration-200 cursor-pointer hover:bg-muted/50",
-                    isExpanded && "bg-muted/50",
+                    "flex items-start gap-4 p-4 transition-all duration-200 cursor-pointer hover:bg-muted/30",
+                    isExpanded && "bg-muted/30 border-b border-border",
                 )}
                 onClick={() => setIsExpanded(!isExpanded)}
                 role="button"
@@ -129,12 +115,10 @@ function ChallengeItem({
                 )}
             >
                 <div className="overflow-hidden">
-                    <div className="pt-2">
-                        <CaseStudyContent
-                            caseStudy={challenge.caseStudy}
-                            onCollapse={handleCollapse}
-                        />
-                    </div>
+                    <CaseStudyContent
+                        caseStudy={challenge.caseStudy}
+                        onCollapse={handleCollapse}
+                    />
                 </div>
             </div>
         </div>
@@ -237,7 +221,7 @@ function CaseStudyContent({
     ];
 
     return (
-        <div className="rounded-2xl border border-border/50 bg-muted/20 overflow-hidden">
+        <div className="bg-muted/40 border-l-4 border-l-emerald-500/50">
             <div className="px-6 py-8 lg:px-10 lg:py-10">
                 <div className="mx-auto max-w-4xl">
                     {/* Case Study Header */}
@@ -613,7 +597,7 @@ function ProjectCard({ project }: { project: Project }) {
     return (
         <article
             ref={cardRef}
-            className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card transition-all duration-300 hover:border-border scroll-m-16"
+            className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-md scroll-m-16"
         >
             <div className="flex flex-col ">
                 {/* Image Carousel */}
@@ -671,14 +655,14 @@ function ProjectCard({ project }: { project: Project }) {
 
                         {/* Challenges Section */}
                         {project.challenges.length > 0 && (
-                            <div className="flex flex-col gap-3 pt-2">
+                            <div className="flex flex-col gap-4 pt-2">
                                 <div className="flex items-center gap-2">
                                     <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                                    <h4 className="text-sm font-medium text-foreground">
+                                    <h4 className="text-sm font-semibold text-foreground">
                                         Challenges ({project.challenges.length})
                                     </h4>
                                 </div>
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col gap-3">
                                     {project.challenges.map(
                                         (challenge, index) => (
                                             <ChallengeItem
@@ -742,7 +726,7 @@ function ProjectCard({ project }: { project: Project }) {
 export function Projects() {
     return (
         <section id="projects" className="border-t border-border">
-            <div className="mx-auto max-w-5xl px-6 py-24 md:py-28">
+            <div className="mx-auto max-w-5xl px-6 py-28 md:py-32">
                 <div className="flex flex-col gap-16">
                     {/* Section Header */}
                     <div className="flex flex-col gap-3">
@@ -752,7 +736,7 @@ export function Projects() {
                     </div>
 
                     {/* Projects List */}
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-8">
                         {projects.map((project, index) => (
                             <ProjectCard key={index} project={project} />
                         ))}

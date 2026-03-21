@@ -6,8 +6,8 @@ import { blogPosts } from "@/content/blog";
 
 export function Blog() {
     return (
-        <section id="blog" className="border-t border-border bg-muted/30">
-            <div className="mx-auto max-w-5xl px-6 py-24 md:py-28">
+        <section id="blog" className="border-t border-border bg-section-alt">
+            <div className="mx-auto max-w-5xl px-6 py-28 md:py-32">
                 <div className="flex flex-col gap-16">
                     {/* Section Header */}
                     <div className="flex flex-col gap-3">
@@ -17,14 +17,14 @@ export function Blog() {
                     </div>
 
                     {/* Blog Posts Grid */}
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-5 sm:grid-cols-2">
                         {blogPosts.map((post, index) => (
                             <Link
                                 key={index}
                                 href={post.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="group relative flex flex-col gap-4 rounded-xl border border-border/50 bg-card p-6 transition-all duration-300 hover:border-border hover:bg-accent/50 hover:shadow-md"
+                                className="group relative flex flex-col gap-4 rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-foreground/20 hover:shadow-md"
                             >
                                 <div className="flex items-start justify-between gap-4">
                                     <h3 className="font-medium text-foreground leading-snug transition-colors group-hover:text-foreground">

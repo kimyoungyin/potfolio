@@ -5,8 +5,8 @@ import { educationList } from "@/content/education";
 
 export function Education() {
     return (
-        <section id="education" className="border-t border-border">
-            <div className="mx-auto max-w-5xl px-6 py-24 md:py-28">
+        <section id="education" className="border-t border-border bg-section-alt">
+            <div className="mx-auto max-w-5xl px-6 py-28 md:py-32">
                 <div className="flex flex-col gap-16">
                     {/* Section Header */}
                     <div className="flex flex-col gap-3">
@@ -29,7 +29,7 @@ export function Education() {
                             {educationList.map((item, index) => (
                                 <div
                                     key={index}
-                                    className="flex flex-col gap-2 rounded-xl border border-border/50 bg-card/50 p-5 transition-colors hover:border-border"
+                                    className="flex flex-col gap-2 rounded-xl border border-border bg-card p-5 shadow-sm transition-all duration-300 hover:border-foreground/20 hover:shadow-md"
                                 >
                                     <h3 className="font-medium text-foreground leading-snug">
                                         {item.institution} {item.title}
