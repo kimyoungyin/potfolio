@@ -10,7 +10,7 @@ export function Hero() {
     return (
         <section
             id="about"
-            className="mx-auto max-w-5xl px-6 py-24 md:py-32 lg:py-40"
+            className="mx-auto max-w-5xl px-6 py-24 print:py-0 md:py-32 lg:py-40"
         >
             <div className="flex flex-col gap-12">
                 {/* Avatar - Now at the top */}

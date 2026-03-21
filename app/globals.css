@@ -190,3 +190,14 @@
 .animation-delay-500 {
   animation-delay: 500ms;
 }
+
+@media print {
+  body {
+    margin: 8mm;
+  }
+
+  /* 섹션 구분선 주변 세로 여백 축소 */
+  section[id] > div {
+    padding-block: 2rem !important;
+  }
+}

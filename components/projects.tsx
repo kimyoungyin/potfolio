@@ -81,7 +81,7 @@ function ChallengeItem({
                         </h4>
                         <Badge
                             variant="outline"
-                            className="text-[10px] px-1.5 py-0 h-4 rounded shrink-0"
+                            className="print:hidden text-[10px] px-1.5 py-0 h-4 rounded shrink-0"
                         >
                             Case Study
                         </Badge>
@@ -94,7 +94,7 @@ function ChallengeItem({
                 {/* Toggle Indicator */}
                 <ChevronDown
                     className={cn(
-                        "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300 mt-1",
+                        "print:hidden h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300 mt-1",
                         isExpanded && "rotate-180",
                     )}
                 />
@@ -366,7 +366,7 @@ function CaseStudyContent({
 
                     {/* Collapse Button */}
                     <div
-                        className="mt-10 pt-6 border-t border-border/50 flex justify-center animate-fade-up"
+                        className="print:hidden mt-10 pt-6 border-t border-border/50 flex justify-center animate-fade-up"
                         style={{
                             animationDelay: "600ms",
                             animationFillMode: "both",
