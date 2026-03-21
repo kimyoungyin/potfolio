@@ -17,6 +17,7 @@ import {
     ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ImpactMetricDescription } from "@/components/impact-metric-description";
 
 interface CaseStudy {
     problem: string;
@@ -28,7 +29,7 @@ interface CaseStudy {
         codeLanguage?: string;
     };
     impact: {
-        metrics: { label: string; value: string; description?: string }[];
+        metrics: { label: string; value: string; description?: string[] }[];
         summary: string;
     };
 }
@@ -120,22 +121,22 @@ const projects: Project[] = [
                             {
                                 label: "Frame Rate",
                                 value: "60fps",
-                                description: "from 15fps",
+                                description: ["from 15fps"],
                             },
                             {
                                 label: "DOM Nodes",
                                 value: "-90%",
-                                description: "reduced from 2000 to 200",
+                                description: ["reduced from 2000 to 200"],
                             },
                             {
                                 label: "Initial Render",
                                 value: "120ms",
-                                description: "from 800ms",
+                                description: ["from 800ms"],
                             },
                             {
                                 label: "Memory Usage",
                                 value: "-65%",
-                                description: "reduced heap size",
+                                description: ["reduced heap size"],
                             },
                         ],
                         summary:
@@ -216,22 +217,22 @@ export async function GET(request: Request) {
                             {
                                 label: "Generation Time",
                                 value: "200ms",
-                                description: "from 3-5 seconds",
+                                description: ["from 3-5 seconds"],
                             },
                             {
                                 label: "Success Rate",
                                 value: "99.9%",
-                                description: "from 70%",
+                                description: ["from 70%"],
                             },
                             {
                                 label: "Cold Start",
                                 value: "<50ms",
-                                description: "edge function",
+                                description: ["edge function"],
                             },
                             {
                                 label: "Social CTR",
                                 value: "+25%",
-                                description: "click-through rate",
+                                description: ["click-through rate"],
                             },
                         ],
                         summary:
@@ -309,22 +310,22 @@ export async function GET(request: Request) {
                             {
                                 label: "Load Time",
                                 value: "800ms",
-                                description: "from 4 seconds",
+                                description: ["from 4 seconds"],
                             },
                             {
                                 label: "API Calls",
                                 value: "-70%",
-                                description: "reduced usage",
+                                description: ["reduced usage"],
                             },
                             {
                                 label: "Cache Hit Rate",
                                 value: "85%",
-                                description: "for popular locations",
+                                description: ["for popular locations"],
                             },
                             {
                                 label: "Rate Limits",
                                 value: "0",
-                                description: "incidents per month",
+                                description: ["incidents per month"],
                             },
                         ],
                         summary:
@@ -647,7 +648,7 @@ function CaseStudyContent({
                             {caseStudy.impact.metrics.map((metric, i) => (
                                 <div
                                     key={i}
-                                    className="group relative overflow-hidden rounded-xl border border-border/50 bg-card p-4 transition-all duration-300 hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/5 animate-fade-up"
+                                    className="@container group relative overflow-hidden rounded-xl border border-border/50 bg-card p-4 transition-all duration-300 hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/5 animate-fade-up"
                                     style={{
                                         animationDelay: `${550 + i * 50}ms`,
                                         animationFillMode: "both",
@@ -663,11 +664,12 @@ function CaseStudyContent({
                                         <span className="text-xs font-medium text-foreground/80">
                                             {metric.label}
                                         </span>
-                                        {metric.description && (
-                                            <span className="text-[10px] text-muted-foreground">
-                                                {metric.description}
-                                            </span>
-                                        )}
+                                        {metric.description &&
+                                            metric.description.length > 0 && (
+                                                <ImpactMetricDescription
+                                                    lines={metric.description}
+                                                />
+                                            )}
                                     </div>
                                 </div>
                             ))}

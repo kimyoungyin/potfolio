@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
@@ -19,10 +20,28 @@ import {
     TrendingUp,
     AlertCircle,
     ChevronUp,
+    Network,
 } from "lucide-react";
+
+const MermaidDiagram = dynamic(
+    () => import("@/components/mermaid-diagram").then((m) => m.MermaidDiagram),
+    { ssr: false },
+);
+
+const CodeHighlight = dynamic(
+    () => import("@/components/code-highlight").then((m) => m.CodeHighlight),
+    { ssr: false },
+);
+
 import { cn } from "@/lib/utils";
-import type { CaseStudy, Challenge, Project } from "@/content/types";
+import type {
+    CaseStudy,
+    Challenge,
+    DiagramPair,
+    Project,
+} from "@/content/types";
 import { projects } from "@/content/projects";
+import { ImpactMetricDescription } from "@/components/impact-metric-description";
 
 const getMetricsGridColsClass = (metricsCount: number) => {
     if (metricsCount <= 1) return "lg:grid-cols-1";
@@ -122,6 +141,58 @@ function ChallengeItem({
     );
 }
 
+function DiagramComparison({ diagram }: { diagram: DiagramPair }) {
+    const { before, after } = diagram;
+
+    if (before && after) {
+        return (
+            <div className="flex flex-col gap-6">
+                <div className="min-w-0 flex flex-col gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-400">
+                        Before
+                    </span>
+                    <MermaidDiagram diagram={before} />
+                </div>
+                <div className="min-w-0 flex flex-col gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+                        After
+                    </span>
+                    <MermaidDiagram diagram={after} />
+                </div>
+            </div>
+        );
+    }
+
+    const single = before ?? after;
+    if (!single) return null;
+
+    return <MermaidDiagram diagram={single} />;
+}
+
+function CaseStudyParagraphs({
+    paragraphs,
+    className,
+}: {
+    paragraphs: string[];
+    className?: string;
+}) {
+    return (
+        <div className="space-y-3">
+            {paragraphs.map((text, i) => (
+                <p
+                    key={i}
+                    className={cn(
+                        "leading-relaxed text-sm",
+                        className ?? "text-muted-foreground",
+                    )}
+                >
+                    {text}
+                </p>
+            ))}
+        </div>
+    );
+}
+
 function CaseStudyContent({
     caseStudy,
     onCollapse,
@@ -139,6 +210,7 @@ function CaseStudyContent({
             borderColor: "border-rose-500/30",
             dotColor: "bg-rose-500",
             content: caseStudy.problem,
+            diagram: caseStudy.problemDiagram,
         },
         {
             id: "investigation",
@@ -149,6 +221,7 @@ function CaseStudyContent({
             borderColor: "border-amber-500/30",
             dotColor: "bg-amber-500",
             content: caseStudy.investigation,
+            diagram: caseStudy.investigationDiagram,
         },
         {
             id: "solution",
@@ -159,6 +232,7 @@ function CaseStudyContent({
             borderColor: "border-emerald-500/30",
             dotColor: "bg-emerald-500",
             content: caseStudy.solution,
+            diagram: caseStudy.solutionDiagram,
         },
     ];
 
@@ -242,9 +316,16 @@ function CaseStudyContent({
                                                     {step.label}
                                                 </h5>
                                             </div>
-                                            <p className="text-muted-foreground leading-relaxed text-sm">
-                                                {step.content}
-                                            </p>
+                                            <CaseStudyParagraphs
+                                                paragraphs={step.content}
+                                            />
+                                            {step.diagram && (
+                                                <div className="mt-4">
+                                                    <DiagramComparison
+                                                        diagram={step.diagram}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -252,11 +333,36 @@ function CaseStudyContent({
                         </div>
                     </div>
 
+                    {/* Architecture Diagram */}
+                    {caseStudy.diagram && (
+                        <div
+                            className="mb-12 animate-fade-up"
+                            style={{
+                                animationDelay: "400ms",
+                                animationFillMode: "both",
+                            }}
+                        >
+                            <div className="flex items-center gap-3 mb-5">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10 dark:bg-violet-500/20">
+                                    <Network className="h-4 w-4 text-violet-500" />
+                                </div>
+                                <h5 className="text-sm font-semibold text-foreground">
+                                    Architecture
+                                </h5>
+                            </div>
+                            <div className="pl-0 sm:pl-11">
+                                <DiagramComparison
+                                    diagram={caseStudy.diagram}
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     {/* Implementation Section */}
                     <div
                         className="mb-12 animate-fade-up"
                         style={{
-                            animationDelay: "400ms",
+                            animationDelay: "500ms",
                             animationFillMode: "both",
                         }}
                     >
@@ -269,12 +375,14 @@ function CaseStudyContent({
                             </h5>
                         </div>
                         <div className="flex flex-col gap-4 pl-0 sm:pl-11">
-                            <p className="text-muted-foreground leading-relaxed text-sm">
-                                {caseStudy.implementation.description}
-                            </p>
+                            <CaseStudyParagraphs
+                                paragraphs={
+                                    caseStudy.implementation.description
+                                }
+                            />
                             {caseStudy.implementation.codeSnippet && (
-                                <div className="rounded-xl bg-[#0d1117] dark:bg-[#0a0a0a] border border-border/30 overflow-hidden">
-                                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 bg-[#161b22] dark:bg-[#111]">
+                                <div className="rounded-xl border border-border/40 overflow-hidden">
+                                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-white/5 bg-zinc-100/80 dark:bg-[#161b22]">
                                         <div className="flex items-center gap-2">
                                             <Code2 className="h-3 w-3 text-muted-foreground" />
                                             <span className="text-xs text-muted-foreground font-mono">
@@ -288,14 +396,15 @@ function CaseStudyContent({
                                             <span className="h-2 w-2 rounded-full bg-[#27ca40]/80" />
                                         </div>
                                     </div>
-                                    <pre className="p-4 overflow-x-auto text-xs leading-relaxed">
-                                        <code className="text-[#e6edf3] dark:text-gray-300 font-mono">
-                                            {
-                                                caseStudy.implementation
-                                                    .codeSnippet
-                                            }
-                                        </code>
-                                    </pre>
+                                    <CodeHighlight
+                                        code={
+                                            caseStudy.implementation.codeSnippet
+                                        }
+                                        lang={
+                                            caseStudy.implementation
+                                                .codeLanguage ?? "typescript"
+                                        }
+                                    />
                                 </div>
                             )}
                         </div>
@@ -305,7 +414,7 @@ function CaseStudyContent({
                     <div
                         className="animate-fade-up"
                         style={{
-                            animationDelay: "500ms",
+                            animationDelay: "600ms",
                             animationFillMode: "both",
                         }}
                     >
@@ -330,7 +439,7 @@ function CaseStudyContent({
                             {caseStudy.impact.metrics.map((metric, i) => (
                                 <div
                                     key={i}
-                                    className="group relative overflow-hidden rounded-xl border border-border/50 bg-card p-4 transition-all duration-300 hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/5 animate-fade-up"
+                                    className="@container group relative overflow-hidden rounded-xl border border-border/50 bg-card p-4 transition-all duration-300 hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/5 animate-fade-up"
                                     style={{
                                         animationDelay: `${550 + i * 50}ms`,
                                         animationFillMode: "both",
@@ -338,17 +447,18 @@ function CaseStudyContent({
                                 >
                                     <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-emerald-500/10 blur-xl transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
                                     <div className="relative flex flex-col gap-1">
-                                        <span className="text-2xl font-bold tracking-tight text-foreground">
-                                            {metric.value}
-                                        </span>
                                         <span className="text-xs font-medium text-foreground/80">
                                             {metric.label}
                                         </span>
-                                        {metric.description && (
-                                            <span className="text-[10px] text-muted-foreground">
-                                                {metric.description}
-                                            </span>
-                                        )}
+                                        <span className="text-2xl font-bold tracking-tight text-foreground">
+                                            {metric.value}
+                                        </span>
+                                        {metric.description &&
+                                            metric.description.length > 0 && (
+                                                <ImpactMetricDescription
+                                                    lines={metric.description}
+                                                />
+                                            )}
                                     </div>
                                 </div>
                             ))}
@@ -357,9 +467,10 @@ function CaseStudyContent({
                         {/* Summary */}
                         <div className="pl-0 sm:pl-11">
                             <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-500/10 p-4">
-                                <p className="text-foreground/90 leading-relaxed text-sm">
-                                    {caseStudy.impact.summary}
-                                </p>
+                                <CaseStudyParagraphs
+                                    paragraphs={caseStudy.impact.summary}
+                                    className="text-foreground/90"
+                                />
                             </div>
                         </div>
                     </div>
@@ -368,7 +479,7 @@ function CaseStudyContent({
                     <div
                         className="print:hidden mt-10 pt-6 border-t border-border/50 flex justify-center animate-fade-up"
                         style={{
-                            animationDelay: "600ms",
+                            animationDelay: "700ms",
                             animationFillMode: "both",
                         }}
                     >

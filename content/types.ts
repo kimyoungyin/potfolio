@@ -1,15 +1,24 @@
+export interface DiagramPair {
+    before?: string;
+    after?: string;
+}
+
 export interface CaseStudy {
-    problem: string;
-    investigation: string;
-    solution: string;
+    problem: string[];
+    problemDiagram?: DiagramPair;
+    investigation: string[];
+    investigationDiagram?: DiagramPair;
+    solution: string[];
+    solutionDiagram?: DiagramPair;
+    diagram?: DiagramPair;
     implementation: {
-        description: string;
+        description: string[];
         codeSnippet?: string;
         codeLanguage?: string;
     };
     impact: {
-        metrics: { label: string; value: string; description?: string }[];
-        summary: string;
+        metrics: { label: string; value: string; description?: string[] }[];
+        summary: string[];
     };
 }
 
