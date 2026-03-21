@@ -53,25 +53,152 @@ export const projects: Project[] = [
                 caseStudy: {
                     problem: [
                         "폼 로직을 단일 훅에 집중시키는 구조 때문에 상태 관리, 검증, Create/Edit 분기가 한곳에 뒤엉켜 유지보수와 확장이 어려워졌습니다.",
-                        "구체적으로 use-scenario-form-state.ts(592줄) 하나에 상태(useState 9개)·ref(useRef 4개)·submit 시 수동 validation(if-else 약 25줄)·모드 분기가 모두 있었고, 230줄짜리 조립 컴포넌트는 그 결과를 props drilling으로 전달했습니다.",
+                        "이 훅은 점점 비대해져 하나의 파일에서 모든 책임을 처리하는 구조가 되었고, 조립 컴포넌트는 해당 상태를 props drilling으로 전달하는 형태였습니다.",
+                        "구체적으로는 use-scenario-form-state.ts가 592줄이었고, useState 9개·useRef 4개·submit 시 수동 validation(if-else 약 25줄)·Create/Edit 분기 로직이 한 파일에 혼재되어 있었습니다. scenario-form-content.tsx는 약 230줄로, 훅이 넘긴 값과 핸들러를 필드 컴포넌트에 계속 전달하는 역할에 가까웠습니다.",
                         "초기에는 폼을 훅으로 캡슐화하면 조립 층이 단순해지고 선언적으로 읽힐 거라 기대했습니다. 실제로는 규칙과 임시 입력까지 훅 안으로 몰리며 복잡도가 줄기보다 훅 내부에 숨은 형태가 됐고, 수정·추적·디버깅 부담이 커졌습니다.",
-                        "추가로 useState 기반 제어 패턴은 필드가 늘수록 상위 상태 갱신이 잦아져 불필요한 리렌더와, 저사양·다필드에서는 입력 지연 같은 성능 리스크로 이어질 수 있었습니다.",
+                        "또한 useState 기반 제어 패턴은 필드가 늘수록 상위 상태 갱신이 잦아져 불필요한 리렌더 가능성이 있었고, 입력 성능에도 영향을 줄 수 있는 구조였습니다.",
                     ],
+                    problemCode: {
+                        caption:
+                            "592줄 훅에 몰려 있던 상태·수동 검증·조립 방식의 일부 (발췌)",
+                        codeLanguage: "typescript",
+                        codeSnippet: `// Before: use-scenario-form-state.ts (발췌)
+const nameInputRef = useRef<HTMLInputElement>(null);
+const galleryInputRef = useRef<HTMLInputElement>(null);
+const authorInputRef = useRef<HTMLInputElement>(null);
+
+const [errors, setErrors] = useState<IScenarioFormErrors>({});
+const [formData, setFormData] =
+    useState<IScenarioFormState>(DEFAULT_FORM_STATE);
+const [keywordInput, setKeywordInput] = useState("");
+const [excludeKeywordInput, setExcludeKeywordInput] = useState("");
+const [authorInput, setAuthorInput] = useState("");
+const [boardInput, setBoardInput] = useState("");
+const [boardSearchQuery, setBoardSearchQuery] = useState("");
+const [showBoardResults, setShowBoardResults] = useState(false);
+const [showAuthorBoardResults, setShowAuthorBoardResults] = useState(false);
+
+// submit 시 수동 validation (발췌)
+const newErrors: IScenarioFormErrors = {};
+
+if (!formData.name.trim()) {
+    newErrors.name = true;
+    setErrors(newErrors);
+    toast.error("시나리오명을 입력해주세요");
+    nameInputRef.current?.focus();
+    return;
+}
+if (formData.platforms.length === 0) {
+    newErrors.platforms = true;
+    setErrors(newErrors);
+    toast.error("최소 1개 플랫폼을 선택해주세요");
+    return;
+}
+// ... 필드가 늘어날수록 if-else도 비례 증가
+
+// Before: scenario-form-content.tsx — props drilling (발췌)
+<FormBasicInfo
+  formData={form.formData}
+  errors={form.errors}
+  nameInputRef={form.nameInputRef}
+  onNameChange={(name) => {
+    form.setFormData((prev) => ({ ...prev, name }));
+    if (form.errors.name && name.trim())
+      form.setErrors((prev) => ({ ...prev, name: false }));
+  }}
+/>
+<FormPlatforms
+  platforms={form.formData.platforms}
+  errors={form.errors}
+  onPlatformToggle={form.handlePlatformToggle}
+  naverPlatformSortOrders={form.formData.naverPlatformSortOrders}
+/>`,
+                    },
                     investigation: [
                         "문제를 단순한 리렌더 이슈로만 보지 않고, 폼 상태·검증·타입을 어느 층(스키마, 폼 라이브러리, 훅, UI)에 둘지로 재정의했습니다.",
                         "기존 방식의 한계로는 세 가지를 짚었습니다. 값마다 상위 useState를 갱신하는 제어 컴포넌트는 트리가 커질수록 리렌더 비용이 커질 수 있고, 수동 if-else validation은 로직이 훅과 submit 경로에 흩어져 일관성이 떨어지며, 단일 훅은 책임이 과다해 한 줄을 고칠 때 파급이 크다는 점입니다.",
-                        "대안으로 React.memo를 먼저 검토했습니다. 제어 폼에서는 입력마다 부모 formData가 바뀌어 자식을 memo로 감싸도 value·onChange·인라인 핸들러·매번 새 객체 props 때문에 얕은 비교를 통과하지 못하는 경우가 흔하고, props가 많을수록 useCallback·useMemo에 의존하게 됩니다. 구조적 부채(분산된 검증, Create/Edit 단일 훅)는 memo만으로는 남습니다.",
+                        "React.memo도 검토했지만, 제어 컴포넌트에서는 부모 상태 변경으로 props가 계속 바뀌기 때문에 얕은 비교를 통과하지 못하는 경우가 많았습니다. 또한 분산된 검증과 단일 훅 구조 같은 문제는 memo만으로 해결할 수 없었습니다.",
                         "React Hook Form은 ref 기반 비제어로 입력을 추적해 useWatch 범위 위주로 구독을 줄일 수 있어, 당시 구조의 ‘매 타이핑마다 상위 상태 흔들기’와 맞물린 문제를 완화하는 데 적합한 대안이라 봤습니다.",
                         "Zod는 z.infer로 타입을 스키마에서 끌어와 이중 정의를 없애고, superRefine으로 날짜 역전·배타 규칙 같은 복합 검증을 한곳에 둘 수 있습니다. zodResolver로 RHF와 붙이면 제출 시점의 유효성도 스키마와 같은 규칙을 쓰게 되어, 수동 if-else와 화면 쪽 판단이 어긋날 여지를 줄일 수 있다고 봤습니다.",
                         "정리하면 RHF+Zod는 재렌더 범위 완화, 검증·타입의 단일화, 훅 책임 분리·Context 기반 조립까지 한 번에 정리할 수 있어 이 조합으로 가기로 결론을 내렸습니다.",
+                        "결론적으로, 기존 구조는 상태·검증·타입이 훅·submit 경로·화면 판단에 흩어진 형태였고, RHF+Zod는 이를 폼·스키마 축으로 단일화할 수 있는 선택이었습니다.",
+                        "또한 RHF를 도입함으로써 기존 제어 컴포넌트 패턴에서 벗어나 폼 상태 관리 방식을 구조적으로 전환할 수 있다고 판단했습니다.",
                     ],
+                    investigationCode: {
+                        caption:
+                            "폼 상태·검증·타입을 한 축으로 묶기로 한 연결 방식 (문서 Investigation·Zod 선택 근거 요약)",
+                        codeLanguage: "typescript",
+                        codeSnippet: `// Investigation에서 확정한 방향 — Zod 선택 근거 (요약)
+// - TypeScript-first: z.infer<typeof schema>로 타입·스키마 단일 출처
+// - superRefine: ctx.addIssue({ path })로 필드에 귀속되는 복합 규칙
+// - @hookform/resolvers: zodResolver(schema)로 RHF와 공식 연동
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+
+const form = useForm<TCreateScenarioFormValues>({
+    resolver: zodResolver(createScenarioFormSchema),
+    mode: "onChange",
+});`,
+                    },
                     solution: [
-                        "복잡도를 줄이기 위해 추상화 레이어를 더 쌓기보다, 책임을 나누는 방향으로 구조를 재설계했습니다. 훅을 더 감싸 늘리지 않고 네 가지로 나눴습니다.",
+                        "복잡도를 줄이기 위해 추상화 레이어를 더 쌓기보다, 각 레이어가 하나의 책임만 갖도록 분리한다는 원칙으로 구조를 재설계했습니다. 훅을 더 감싸 늘리지 않고 네 가지 구조 변경으로 나눴습니다.",
                         "첫째, 스키마를 base → create/edit으로 계층화했습니다. 공통 필드는 baseScenarioFormSchema에 두고 Create 전용 validation(platforms 최소 1개·날짜 역전 등)은 extend + superRefine으로 분리해, 공통 규칙 변경과 생성 전용 규칙 변경의 영향 범위를 나눴습니다.",
                         "둘째, 단일 훅을 use-create-scenario-form(78줄)과 use-scenario-edit-form(78줄)으로 완전히 나눴습니다. Create/Edit 분기를 훅 밖으로 빼 한 훅이 초기화·제출 조율만 담당하게 해, 한 모드를 고칠 때 다른 모드로의 오염을 줄였습니다.",
                         "셋째, ScenarioFormContent는 FormProvider만 제공하고 하위가 useFormContext()로 폼 상태에 접근하게 했습니다. 조립 컴포넌트에서 props drilling을 없애 필드 단위 수정 시 넘겨줄 인자 수를 줄였습니다.",
                         "넷째, 키워드·제외키워드 배타 규칙은 FormKeywords가 Context로 직접 집행하게 했습니다. 훅은 폼 생명주기만 맡기고 UI 근처 규칙은 컴포넌트에 두어, 규칙 변경 시 훅 파일을 건드릴 필요를 줄였습니다.",
                     ],
+                    solutionCode: {
+                        caption:
+                            "Create 전용 훅으로 초기화·제출만 담당하는 형태 (발췌)",
+                        codeLanguage: "typescript",
+                        codeSnippet: `// After: use-create-scenario-form.ts (발췌)
+export function useCreateScenarioForm({
+    open,
+    projectId,
+    prefillData,
+    onSuccess,
+}) {
+    const form = useForm<TCreateScenarioFormValues>({
+        resolver: zodResolver(createScenarioFormSchema),
+        defaultValues: CREATE_FORM_DEFAULT_VALUES,
+        mode: "onChange",
+    });
+
+    const { mutate, isPending } = useCreateScenario();
+
+    useEffect(() => {
+        if (!open) return;
+        form.reset(
+            prefillData
+                ? mapPrefillToScenarioForm(prefillData)
+                : CREATE_FORM_DEFAULT_VALUES,
+        );
+    }, [open, prefillData, form]);
+
+    const handleSubmit = () => {
+        void form.handleSubmit((data) => {
+            const payload = mapScenarioFormToCreatePayload(data, projectId);
+            mutate(payload, {
+                onSuccess: () => {
+                    form.reset(CREATE_FORM_DEFAULT_VALUES);
+                    onSuccess();
+                },
+            });
+        })();
+    };
+
+    return {
+        form,
+        handleSubmit,
+        isSubmitting: isPending,
+        isFormValid: form.formState.isValid,
+        mode: "create",
+    };
+}`,
+                    },
+                    architectureIntro:
+                        "Before는 단일 훅이 상태·검증·분기를 한데 묶는 구조이고, After는 스키마·훅(create/edit)·컴포넌트로 책임이 분리된 구조입니다.",
                     diagram: {
                         before: `graph TD
     H["use-scenario-form-state.ts (592줄)\\nuseState ×9  /  useRef ×4\\n수동 validation · Create/Edit 분기 혼재"]
@@ -106,6 +233,7 @@ export const projects: Project[] = [
                             "FSD 레이어 경계를 유지하기 위해 scenario-edit은 scenario-create 내부를 직접 import하지 않고 @x/scenario-edit.ts public API만을 통해 baseScenarioFormSchema와 ScenarioFormContent를 가져갑니다. Create 전용 superRefine은 scenario-create 경계 안에만 존재합니다.",
                             "상태 위치는 세 가지입니다. 제출 시 서버로 가는 값은 RHF 폼 상태(setValue·getValues), 제출과 무관한 입력 중 임시값(keywordInput 등)은 컴포넌트 로컬 useState, validation 규칙 선언은 Zod 스키마입니다.",
                             "폼은 mode: onChange로 두어 입력 중에도 zodResolver 결과가 formState에 반영되도록 했습니다. 제출 가능 여부 등 UI는 기존과 같이 스키마 유효성에 맞춰 두었고, 달라진 점은 규칙의 단일 출처가 Zod 스키마라는 것입니다.",
+                            "이 구조를 통해 폼 상태, 검증, UI 로직이 서로 독립적으로 바꿀 수 있게 했습니다.",
                         ],
                         codeSnippet: `// base → create 확장: 공통 필드는 base에, Create 전용 validation은 extend + superRefine에
 export const createScenarioFormSchema = baseScenarioFormSchema
@@ -177,7 +305,8 @@ export const editScenarioFormSchema = baseScenarioFormSchema;`,
                         ],
                         summary: [
                             "숫자로는 훅·조립 컴포넌트 코드가 크게 줄었고, 훅 안에 있던 수동 상태·분산 검증은 스키마와 폼 레이어로 옮겨졌습니다.",
-                            "그 결과 단일 훅에 숨겨져 있던 복잡도를 스키마·훅(create/edit)·컴포넌트로 나눠, 구조적으로 관리·확장할 수 있는 형태로 바뀌었습니다.",
+                            "그 결과 단일 훅에 숨겨져 있던 복잡도를 스키마(검증), 훅(폼 생명주기), 컴포넌트(UI·비즈니스 규칙)로 나눴습니다.",
+                            "기능 추가나 수정 시 어느 레이어를 변경해야 하는지 명확해져, 변경 영향 범위를 예측하고 안전하게 수정할 수 있는 구조로 개선했습니다.",
                         ],
                     },
                 },

@@ -19,10 +19,19 @@ import {
 import { cn } from "@/lib/utils";
 import { ImpactMetricDescription } from "@/components/impact-metric-description";
 
+interface CaseStudyCodeEvidence {
+    caption?: string;
+    codeSnippet: string;
+    codeLanguage?: string;
+}
+
 interface CaseStudy {
     problem: string;
     investigation: string;
     solution: string;
+    problemCode?: CaseStudyCodeEvidence;
+    investigationCode?: CaseStudyCodeEvidence;
+    solutionCode?: CaseStudyCodeEvidence;
     implementation: {
         description: string;
         codeSnippet?: string;
@@ -464,6 +473,7 @@ function CaseStudyContent({
             borderColor: "border-rose-500/30",
             dotColor: "bg-rose-500",
             content: caseStudy.problem,
+            code: caseStudy.problemCode,
         },
         {
             id: "investigation",
@@ -474,6 +484,7 @@ function CaseStudyContent({
             borderColor: "border-amber-500/30",
             dotColor: "bg-amber-500",
             content: caseStudy.investigation,
+            code: caseStudy.investigationCode,
         },
         {
             id: "solution",
@@ -484,6 +495,7 @@ function CaseStudyContent({
             borderColor: "border-emerald-500/30",
             dotColor: "bg-emerald-500",
             content: caseStudy.solution,
+            code: caseStudy.solutionCode,
         },
     ];
 
@@ -570,6 +582,40 @@ function CaseStudyContent({
                                             <p className="text-muted-foreground leading-relaxed text-sm">
                                                 {step.content}
                                             </p>
+                                            {step.code ? (
+                                                <div className="mt-4 space-y-2">
+                                                    {step.code.caption ? (
+                                                        <p className="text-xs text-muted-foreground leading-relaxed">
+                                                            {step.code.caption}
+                                                        </p>
+                                                    ) : null}
+                                                    <div className="rounded-xl bg-[#0d1117] dark:bg-[#0a0a0a] border border-border/30 overflow-hidden">
+                                                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 bg-[#161b22] dark:bg-[#111]">
+                                                            <div className="flex items-center gap-2">
+                                                                <Code2 className="h-3 w-3 text-muted-foreground" />
+                                                                <span className="text-xs text-muted-foreground font-mono">
+                                                                    {step.code
+                                                                        .codeLanguage ||
+                                                                        "code"}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex gap-1.5">
+                                                                <span className="h-2 w-2 rounded-full bg-[#ff5f56]/80" />
+                                                                <span className="h-2 w-2 rounded-full bg-[#ffbd2e]/80" />
+                                                                <span className="h-2 w-2 rounded-full bg-[#27ca40]/80" />
+                                                            </div>
+                                                        </div>
+                                                        <pre className="p-4 overflow-x-auto text-xs leading-relaxed">
+                                                            <code className="text-[#e6edf3] dark:text-gray-300 font-mono whitespace-pre-wrap">
+                                                                {
+                                                                    step.code
+                                                                        .codeSnippet
+                                                                }
+                                                            </code>
+                                                        </pre>
+                                                    </div>
+                                                </div>
+                                            ) : null}
                                         </div>
                                     </div>
                                 );

@@ -22,6 +22,7 @@ const CodeHighlight = dynamic(
 import { cn } from "@/lib/utils";
 import type {
     CaseStudy,
+    CaseStudyCodeEvidence,
     Challenge,
     DiagramPair,
     Project,
@@ -153,6 +154,43 @@ function DiagramComparison({ diagram }: { diagram: DiagramPair }) {
     return <MermaidDiagram diagram={single} />;
 }
 
+function CaseStudyCodeBlock({
+    evidence,
+    className,
+}: {
+    evidence: CaseStudyCodeEvidence;
+    className?: string;
+}) {
+    return (
+        <div className={cn("space-y-2", className)}>
+            {evidence.caption ? (
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                    {evidence.caption}
+                </p>
+            ) : null}
+            <div className="rounded-xl border border-border/40 overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-white/5 bg-zinc-100/80 dark:bg-[#161b22]">
+                    <div className="flex items-center gap-2">
+                        <Code2 className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground font-mono">
+                            {evidence.codeLanguage || "code"}
+                        </span>
+                    </div>
+                    <div className="flex gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-[#ff5f56]/80" />
+                        <span className="h-2 w-2 rounded-full bg-[#ffbd2e]/80" />
+                        <span className="h-2 w-2 rounded-full bg-[#27ca40]/80" />
+                    </div>
+                </div>
+                <CodeHighlight
+                    code={evidence.codeSnippet}
+                    lang={evidence.codeLanguage ?? "typescript"}
+                />
+            </div>
+        </div>
+    );
+}
+
 function CaseStudyParagraphs({
     paragraphs,
     className,
@@ -195,6 +233,7 @@ function CaseStudyContent({
             dotColor: "bg-rose-500",
             content: caseStudy.problem,
             diagram: caseStudy.problemDiagram,
+            code: caseStudy.problemCode,
         },
         {
             id: "investigation",
@@ -206,6 +245,7 @@ function CaseStudyContent({
             dotColor: "bg-amber-500",
             content: caseStudy.investigation,
             diagram: caseStudy.investigationDiagram,
+            code: caseStudy.investigationCode,
         },
         {
             id: "solution",
@@ -217,6 +257,7 @@ function CaseStudyContent({
             dotColor: "bg-emerald-500",
             content: caseStudy.solution,
             diagram: caseStudy.solutionDiagram,
+            code: caseStudy.solutionCode,
         },
     ];
 
@@ -303,6 +344,12 @@ function CaseStudyContent({
                                             <CaseStudyParagraphs
                                                 paragraphs={step.content}
                                             />
+                                            {step.code && (
+                                                <CaseStudyCodeBlock
+                                                    evidence={step.code}
+                                                    className="mt-4"
+                                                />
+                                            )}
                                             {step.diagram && (
                                                 <div className="mt-4">
                                                     <DiagramComparison
@@ -335,6 +382,11 @@ function CaseStudyContent({
                                 </h5>
                             </div>
                             <div className="pl-0 sm:pl-11">
+                                {caseStudy.architectureIntro ? (
+                                    <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+                                        {caseStudy.architectureIntro}
+                                    </p>
+                                ) : null}
                                 <DiagramComparison
                                     diagram={caseStudy.diagram}
                                 />
@@ -365,31 +417,16 @@ function CaseStudyContent({
                                 }
                             />
                             {caseStudy.implementation.codeSnippet && (
-                                <div className="rounded-xl border border-border/40 overflow-hidden">
-                                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-white/5 bg-zinc-100/80 dark:bg-[#161b22]">
-                                        <div className="flex items-center gap-2">
-                                            <Code2 className="h-3 w-3 text-muted-foreground" />
-                                            <span className="text-xs text-muted-foreground font-mono">
-                                                {caseStudy.implementation
-                                                    .codeLanguage || "code"}
-                                            </span>
-                                        </div>
-                                        <div className="flex gap-1.5">
-                                            <span className="h-2 w-2 rounded-full bg-[#ff5f56]/80" />
-                                            <span className="h-2 w-2 rounded-full bg-[#ffbd2e]/80" />
-                                            <span className="h-2 w-2 rounded-full bg-[#27ca40]/80" />
-                                        </div>
-                                    </div>
-                                    <CodeHighlight
-                                        code={
-                                            caseStudy.implementation.codeSnippet
-                                        }
-                                        lang={
+                                <CaseStudyCodeBlock
+                                    evidence={{
+                                        codeSnippet:
                                             caseStudy.implementation
-                                                .codeLanguage ?? "typescript"
-                                        }
-                                    />
-                                </div>
+                                                .codeSnippet,
+                                        codeLanguage:
+                                            caseStudy.implementation
+                                                .codeLanguage,
+                                    }}
+                                />
                             )}
                         </div>
                     </div>

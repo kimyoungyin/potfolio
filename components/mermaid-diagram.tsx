@@ -37,7 +37,7 @@ export function MermaidDiagram({ diagram }: { diagram: string }) {
 
     return (
         <div
-            className="overflow-x-auto rounded-xl border border-border/30 bg-card p-4 [&_svg]:max-w-full [&_svg]:h-auto"
+            className="flex w-full justify-center overflow-x-auto rounded-xl border border-border/30 bg-card p-4 [&_svg]:block [&_svg]:max-w-full [&_svg]:h-auto"
             dangerouslySetInnerHTML={{ __html: svg }}
         />
     );
