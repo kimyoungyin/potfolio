@@ -54,24 +54,26 @@ const getMetricsGridColsClass = (metricsCount: number) => {
 function ChallengeItem({
     challenge,
     index,
-    scrollTargetRef,
 }: {
     challenge: Challenge;
     index: number;
-    scrollTargetRef: React.RefObject<HTMLElement | null>;
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const panelId = `challenge-panel-${index}`;
+    const challengeItemRef = useRef<HTMLDivElement>(null);
 
     const handleScrollToTop = () => {
-        scrollTargetRef.current?.scrollIntoView({
+        challengeItemRef.current?.scrollIntoView({
             behavior: "smooth",
             block: "start",
         });
     };
 
     return (
-        <div className="flex flex-col rounded-xl border border-border bg-card/80 overflow-hidden">
+        <div
+            ref={challengeItemRef}
+            className="scroll-mt-24 flex flex-col rounded-xl border border-border bg-card/80 overflow-hidden"
+        >
             {/* Challenge Header */}
             <button
                 type="button"
@@ -738,7 +740,6 @@ function ProjectCard({ project }: { project: Project }) {
                                                 key={index}
                                                 challenge={challenge}
                                                 index={index}
-                                                scrollTargetRef={cardRef}
                                             />
                                         ),
                                     )}
