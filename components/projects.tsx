@@ -394,10 +394,19 @@ function CaseStudyContent({
                                 </h5>
                             </div>
                             <div className="pl-0 sm:pl-11">
-                                {caseStudy.architectureIntro ? (
-                                    <p className="mb-4 text-base leading-relaxed text-muted-foreground">
-                                        {caseStudy.architectureIntro}
-                                    </p>
+                                {caseStudy.architectureIntro?.length ? (
+                                    <div className="mb-4 space-y-2">
+                                        {caseStudy.architectureIntro.map(
+                                            (line, index) => (
+                                                <p
+                                                    key={index}
+                                                    className="text-base leading-relaxed text-muted-foreground"
+                                                >
+                                                    {line}
+                                                </p>
+                                            ),
+                                        )}
+                                    </div>
                                 ) : null}
                                 <DiagramComparison
                                     diagram={caseStudy.diagram}

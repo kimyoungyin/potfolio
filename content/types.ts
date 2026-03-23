@@ -20,8 +20,8 @@ export interface CaseStudy {
     solution: string[];
     solutionDiagram?: DiagramPair;
     solutionCode?: CaseStudyCodeEvidence;
-    /** Architecture 다이어그램 위에 표시하는 한 줄 요약(선택) */
-    architectureIntro?: string;
+    /** Architecture 다이어그램 위에 표시하는 요약 문단(선택) */
+    architectureIntro?: string[];
     diagram?: DiagramPair;
     implementation: {
         description: string[];
