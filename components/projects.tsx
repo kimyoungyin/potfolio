@@ -63,8 +63,7 @@ function ChallengeItem({
     const [isExpanded, setIsExpanded] = useState(false);
     const panelId = `challenge-panel-${index}`;
 
-    const handleCollapse = () => {
-        setIsExpanded(false);
+    const handleScrollToTop = () => {
         scrollTargetRef.current?.scrollIntoView({
             behavior: "smooth",
             block: "start",
@@ -132,7 +131,7 @@ function ChallengeItem({
                 <div className="overflow-hidden">
                     <CaseStudyContent
                         caseStudy={challenge.caseStudy}
-                        onCollapse={handleCollapse}
+                        onScrollToTop={handleScrollToTop}
                     />
                 </div>
             </div>
@@ -231,10 +230,10 @@ function CaseStudyParagraphs({
 
 function CaseStudyContent({
     caseStudy,
-    onCollapse,
+    onScrollToTop,
 }: {
     caseStudy: CaseStudy;
-    onCollapse: () => void;
+    onScrollToTop: () => void;
 }) {
     const timelineSteps = [
         {
@@ -507,7 +506,7 @@ function CaseStudyContent({
                         </div>
                     </div>
 
-                    {/* Collapse Button */}
+                    {/* Scroll To Top Button */}
                     <div
                         className="print:hidden mt-10 pt-6 border-t border-border/50 flex justify-center animate-fade-up"
                         style={{
@@ -518,11 +517,11 @@ function CaseStudyContent({
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={onCollapse}
+                            onClick={onScrollToTop}
                             className="gap-2 text-muted-foreground hover:text-foreground"
                         >
                             <ChevronUp className="h-4 w-4" />
-                            닫기
+                            위로 이동
                         </Button>
                     </div>
                 </div>
@@ -698,7 +697,10 @@ function ProjectCard({ project }: { project: Project }) {
                             </h4>
                             <ul className="grid gap-1.5 text-base text-muted-foreground sm:grid-cols-2">
                                 {project.features.map((feature, i) => (
-                                    <li key={i} className="flex items-start gap-2">
+                                    <li
+                                        key={i}
+                                        className="flex items-start gap-2"
+                                    >
                                         <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-foreground/30" />
                                         {feature}
                                     </li>
