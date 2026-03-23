@@ -1,8 +1,6 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { blogPosts } from "@/content/blog";
+import { blogPosts, blogUrl } from "@/content/blog";
 
 export function Blog() {
     return (
@@ -20,7 +18,7 @@ export function Blog() {
                     <div className="grid gap-5 sm:grid-cols-2">
                         {blogPosts.map((post, index) => (
                             <Link
-                                key={index}
+                                key={post.url}
                                 href={post.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -47,7 +45,7 @@ export function Blog() {
                     {/* View All Link */}
                     <div className="flex justify-center">
                         <Link
-                            href="https://blog.example.com"
+                            href={blogUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="group flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"

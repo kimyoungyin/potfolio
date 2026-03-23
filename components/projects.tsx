@@ -7,7 +7,21 @@ import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github, ChevronDown, ChevronLeft, ChevronRight, Lightbulb, Search, Wrench, Code as Code2, TrendingUp, CircleAlert as AlertCircle, ChevronUp, Network } from "lucide-react";
+import {
+    ExternalLink,
+    Github,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    Lightbulb,
+    Search,
+    Wrench,
+    Code as Code2,
+    TrendingUp,
+    CircleAlert as AlertCircle,
+    ChevronUp,
+    Network,
+} from "lucide-react";
 
 const MermaidDiagram = dynamic(
     () => import("@/components/mermaid-diagram").then((m) => m.MermaidDiagram),
@@ -47,6 +61,7 @@ function ChallengeItem({
     scrollTargetRef: React.RefObject<HTMLElement | null>;
 }) {
     const [isExpanded, setIsExpanded] = useState(false);
+    const panelId = `challenge-panel-${index}`;
 
     const handleCollapse = () => {
         setIsExpanded(false);
@@ -59,20 +74,15 @@ function ChallengeItem({
     return (
         <div className="flex flex-col rounded-xl border border-border bg-card/50 shadow-sm overflow-hidden">
             {/* Challenge Header */}
-            <div
+            <button
+                type="button"
                 className={cn(
                     "flex items-start gap-4 p-4 transition-all duration-200 cursor-pointer hover:bg-muted/30",
                     isExpanded && "bg-muted/30 border-b border-border",
                 )}
                 onClick={() => setIsExpanded(!isExpanded)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setIsExpanded((prev) => !prev);
-                    }
-                }}
+                aria-expanded={isExpanded}
+                aria-controls={panelId}
             >
                 {/* Challenge Number */}
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-semibold bg-foreground/5 text-foreground">
@@ -104,10 +114,14 @@ function ChallengeItem({
                         isExpanded && "rotate-180",
                     )}
                 />
-            </div>
+            </button>
 
             {/* Expanded Case Study */}
             <div
+                id={panelId}
+                role="region"
+                aria-label={`${challenge.title} 케이스 스터디`}
+                aria-hidden={!isExpanded}
                 className={cn(
                     "grid transition-all duration-500 ease-in-out",
                     isExpanded
@@ -586,6 +600,7 @@ function ProjectImageCarousel({
             {images.length > 1 && (
                 <>
                     <button
+                        type="button"
                         onClick={() => emblaApi?.scrollPrev()}
                         disabled={!canScrollPrev}
                         aria-label="Previous slide"
@@ -597,6 +612,7 @@ function ProjectImageCarousel({
                         <ChevronLeft className="h-4 w-4" />
                     </button>
                     <button
+                        type="button"
                         onClick={() => emblaApi?.scrollNext()}
                         disabled={!canScrollNext}
                         aria-label="Next slide"
@@ -610,6 +626,7 @@ function ProjectImageCarousel({
                     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
                         {images.map((_, i) => (
                             <button
+                                type="button"
                                 key={i}
                                 onClick={() => emblaApi?.scrollTo(i)}
                                 aria-label={`Slide ${i + 1}`}

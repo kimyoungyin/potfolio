@@ -1,5 +1,3 @@
-"use client";
-
 import { GraduationCap } from "lucide-react";
 import { educationList } from "@/content/education";
 
@@ -11,7 +9,7 @@ export function Education() {
                     {/* Section Header */}
                     <div className="flex flex-col gap-3">
                         <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-                            Education
+                            학력
                         </h2>
                     </div>
 
@@ -22,13 +20,13 @@ export function Education() {
                                 <GraduationCap className="h-4 w-4 text-muted-foreground" />
                             </div>
                             <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/70">
-                                학력
+                                    학력
                             </span>
                         </div>
                         <div className="flex flex-col gap-5">
-                            {educationList.map((item, index) => (
+                            {educationList.map((item) => (
                                 <div
-                                    key={index}
+                                    key={`${item.institution}-${item.title}-${item.period}`}
                                     className="flex flex-col gap-2 rounded-xl border border-border bg-card p-5 shadow-sm transition-all duration-300 hover:border-foreground/20 hover:shadow-md"
                                 >
                                     <h3 className="font-medium text-foreground leading-snug">

@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { heroContacts, heroProfile } from "@/content/hero";
 
@@ -28,7 +25,7 @@ export function Footer() {
                             >
                                 {contact.type === "email" ? (
                                     <Link
-                                        href={`mailto:${contact.href}`}
+                                        href={contact.href}
                                         aria-label={contact.label}
                                     >
                                         <contact.icon className="h-4 w-4" />

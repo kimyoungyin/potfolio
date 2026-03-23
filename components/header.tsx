@@ -109,6 +109,11 @@ export function Header() {
                         size="icon"
                         className="h-9 w-9"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        aria-label={
+                            isMobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"
+                        }
+                        aria-controls="mobile-nav"
+                        aria-expanded={isMobileMenuOpen}
                     >
                         {isMobileMenuOpen ? (
                             <X className="h-5 w-5" />
@@ -121,33 +126,37 @@ export function Header() {
 
             {/* Mobile Navigation */}
             <div
-                className={`overflow-hidden transition-all duration-300 md:hidden ${
+                id="mobile-nav"
+                aria-hidden={!isMobileMenuOpen}
+                className={`grid transition-all duration-300 md:hidden ${
                     isMobileMenuOpen
-                        ? "max-h-64 opacity-100"
-                        : "max-h-0 opacity-0"
+                        ? "grid-rows-[1fr] opacity-100"
+                        : "grid-rows-[0fr] opacity-0"
                 }`}
             >
-                <nav className="border-b border-border/50 bg-background/95 backdrop-blur-xl px-6 py-4">
-                    <div className="flex flex-col gap-1">
-                        {navItems.map((item, index) => (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                onClick={(e) => {
-                                    handleNavClick(item.href)(e);
-                                    setIsMobileMenuOpen(false);
-                                }}
-                                className={`py-2 text-sm text-muted-foreground transition-colors hover:text-foreground animate-slide-in opacity-0`}
-                                style={{
-                                    animationDelay: `${index * 50}ms`,
-                                    animationFillMode: "forwards",
-                                }}
-                            >
-                                {item.name}
-                            </Link>
-                        ))}
-                    </div>
-                </nav>
+                <div className="overflow-hidden">
+                    <nav className="border-b border-border/50 bg-background/95 backdrop-blur-xl px-6 py-4">
+                        <div className="flex flex-col gap-1">
+                            {navItems.map((item, index) => (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    onClick={(e) => {
+                                        handleNavClick(item.href)(e);
+                                        setIsMobileMenuOpen(false);
+                                    }}
+                                    className={`py-2 text-sm text-muted-foreground transition-colors hover:text-foreground animate-slide-in opacity-0`}
+                                    style={{
+                                        animationDelay: `${index * 50}ms`,
+                                        animationFillMode: "forwards",
+                                    }}
+                                >
+                                    {item.name}
+                                </Link>
+                            ))}
+                        </div>
+                    </nav>
+                </div>
             </div>
         </header>
     );

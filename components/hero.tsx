@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Github, Mail, Linkedin, ArrowRight, MapPin } from "lucide-react";
+import { Github, ArrowRight, MapPin } from "lucide-react";
 import { heroProfile, heroIntro, heroContacts, heroCtas } from "@/content/hero";
 
 export function Hero() {
@@ -16,7 +16,6 @@ export function Hero() {
                 {/* Avatar - Now at the top */}
                 <div
                     className="flex justify-start opacity-0 animate-fade-up"
-                    style={{ animationFillMode: "forwards" }}
                 >
                     <div className="relative">
                         <div className="absolute -inset-1 rounded-full bg-linear-to-br from-foreground/5 to-foreground/10 blur-xl" />
@@ -43,7 +42,6 @@ export function Hero() {
                 <div className="flex flex-col gap-8 md:max-w-2xl">
                     <div
                         className="flex flex-col gap-4 opacity-0 animate-fade-up animation-delay-100"
-                        style={{ animationFillMode: "forwards" }}
                     >
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <MapPin className="h-3.5 w-3.5" />
@@ -60,7 +58,6 @@ export function Hero() {
 
                     <p
                         className="text-lg text-muted-foreground leading-relaxed text-pretty opacity-0 animate-fade-up animation-delay-200"
-                        style={{ animationFillMode: "forwards" }}
                     >
                         {heroIntro}
                     </p>
@@ -68,15 +65,20 @@ export function Hero() {
                     {/* Contact Links */}
                     <div
                         className="flex flex-wrap items-center gap-6 opacity-0 animate-fade-up animation-delay-300"
-                        style={{ animationFillMode: "forwards" }}
                     >
                         {heroContacts.map((contact) => {
                             return (
                                 <Link
                                     key={contact.label}
                                     href={contact.href}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                    target={
+                                        contact.type === "email" ? undefined : "_blank"
+                                    }
+                                    rel={
+                                        contact.type === "email"
+                                            ? undefined
+                                            : "noopener noreferrer"
+                                    }
                                     className="group flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
                                 >
                                     <contact.icon className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" />
@@ -89,7 +91,6 @@ export function Hero() {
                     {/* CTA Buttons */}
                     <div
                         className="flex flex-wrap gap-4 pt-2 opacity-0 animate-fade-up animation-delay-400"
-                        style={{ animationFillMode: "forwards" }}
                     >
                         {heroCtas.map((cta) => {
                             const isPrimary = cta.variant === "primary";
