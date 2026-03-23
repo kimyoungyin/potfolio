@@ -60,7 +60,7 @@ export const projects: Project[] = [
                     ],
                     problemCode: {
                         caption:
-                            "592줄 훅에 몰려 있던 상태·수동 검증·조립 방식의 일부 (발췌)",
+                            "592줄 훅에 몰려 있던 상태·수동 검증·조립 방식의 일부",
                         codeLanguage: "typescript",
                         codeSnippet: `// Before: use-scenario-form-state.ts (발췌)
 const nameInputRef = useRef<HTMLInputElement>(null);
@@ -118,7 +118,9 @@ if (formData.platforms.length === 0) {
                         "문제를 단순한 리렌더 이슈로만 보지 않고, 폼 상태·검증·타입을 어느 층(스키마, 폼 라이브러리, 훅, UI)에 둘지로 재정의했습니다.",
                         "기존 방식의 한계로는 세 가지를 짚었습니다. 값마다 상위 useState를 갱신하는 제어 컴포넌트는 트리가 커질수록 리렌더 비용이 커질 수 있고, 수동 if-else validation은 로직이 훅과 submit 경로에 흩어져 일관성이 떨어지며, 단일 훅은 책임이 과다해 한 줄을 고칠 때 파급이 크다는 점입니다.",
                         "React.memo도 검토했지만, 제어 컴포넌트에서는 부모 상태 변경으로 props가 계속 바뀌기 때문에 얕은 비교를 통과하지 못하는 경우가 많았습니다. 또한 분산된 검증과 단일 훅 구조 같은 문제는 memo만으로 해결할 수 없었습니다.",
+                        "Formik 등도 검토했으나 제어 컴포넌트 중심이라 코드는 단순해질 수 있어도, 리렌더 특성은 기존과 유사할 것으로 보였습니다.",
                         "React Hook Form은 ref 기반 비제어로 입력을 추적해 useWatch 범위 위주로 구독을 줄일 수 있어, 당시 구조의 ‘매 타이핑마다 상위 상태 흔들기’와 맞물린 문제를 완화하는 데 적합한 대안이라 봤습니다.",
+                        "React DevTools Profiler로 텍스트 입력 시나리오를 비교했을 때, 기존 구조에서는 입력 시 폼 전반의 컴포넌트가 함께 렌더링되었고 Profiler 상에서 다수 컴포넌트가 동시에 업데이트되는 것을 확인했습니다. RHF 적용 이후에는 입력 필드 컴포넌트 중심으로만 렌더링이 발생했습니다.",
                         "Zod는 z.infer로 타입을 스키마에서 끌어와 이중 정의를 없애고, superRefine으로 날짜 역전·배타 규칙 같은 복합 검증을 한곳에 둘 수 있습니다. zodResolver로 RHF와 붙이면 제출 시점의 유효성도 스키마와 같은 규칙을 쓰게 되어, 수동 if-else와 화면 쪽 판단이 어긋날 여지를 줄일 수 있다고 봤습니다.",
                         "정리하면 RHF+Zod는 재렌더 범위 완화, 검증·타입의 단일화, 훅 책임 분리·Context 기반 조립까지 한 번에 정리할 수 있어 이 조합으로 가기로 결론을 내렸습니다.",
                         "결론적으로, 기존 구조는 상태·검증·타입이 훅·submit 경로·화면 판단에 흩어진 형태였고, RHF+Zod는 이를 폼·스키마 축으로 단일화할 수 있는 선택이었습니다.",
@@ -126,7 +128,7 @@ if (formData.platforms.length === 0) {
                     ],
                     investigationCode: {
                         caption:
-                            "폼 상태·검증·타입을 한 축으로 묶기로 한 연결 방식 (문서 Investigation·Zod 선택 근거 요약)",
+                            "폼 상태·검증·타입을 한 축으로 묶기로 한 연결 방식",
                         codeLanguage: "typescript",
                         codeSnippet: `// Investigation에서 확정한 방향 — Zod 선택 근거 (요약)
 // - TypeScript-first: z.infer<typeof schema>로 타입·스키마 단일 출처
@@ -147,10 +149,11 @@ const form = useForm<TCreateScenarioFormValues>({
                         "둘째, 단일 훅을 use-create-scenario-form(78줄)과 use-scenario-edit-form(78줄)으로 완전히 나눴습니다. Create/Edit 분기를 훅 밖으로 빼 한 훅이 초기화·제출 조율만 담당하게 해, 한 모드를 고칠 때 다른 모드로의 오염을 줄였습니다.",
                         "셋째, ScenarioFormContent는 FormProvider만 제공하고 하위가 useFormContext()로 폼 상태에 접근하게 했습니다. 조립 컴포넌트에서 props drilling을 없애 필드 단위 수정 시 넘겨줄 인자 수를 줄였습니다.",
                         "넷째, 키워드·제외키워드 배타 규칙은 FormKeywords가 Context로 직접 집행하게 했습니다. 훅은 폼 생명주기만 맡기고 UI 근처 규칙은 컴포넌트에 두어, 규칙 변경 시 훅 파일을 건드릴 필요를 줄였습니다.",
+                        "배타 규칙은 입력 직후 리스트를 맞춰 주는 성격이 커서, 서버 도메인 규칙보다 입력 UX에 가깝다고 보아 스키마가 아닌 컴포넌트에서 집행했습니다.",
                     ],
                     solutionCode: {
                         caption:
-                            "Create 전용 훅으로 초기화·제출만 담당하는 형태 (발췌)",
+                            "Create 전용 훅으로 초기화·제출만 담당하는 형태",
                         codeLanguage: "typescript",
                         codeSnippet: `// After: use-create-scenario-form.ts (발췌)
 export function useCreateScenarioForm({
@@ -198,7 +201,7 @@ export function useCreateScenarioForm({
 }`,
                     },
                     architectureIntro:
-                        "Before는 단일 훅이 상태·검증·분기를 한데 묶는 구조이고, After는 스키마·훅(create/edit)·컴포넌트로 책임이 분리된 구조입니다.",
+                        "Before는 단일 훅이 상태·검증·분기를 한데 묶는 단일 훅 중심 구조입니다. After는 단일 훅 중심 구조에서 역할별 레이어 분리 구조로 변경했습니다. 스키마·훅(create/edit)·컴포넌트로 책임이 분리된 구조이며, 폼 관련 변경은 스키마·훅·UI 중 한 축에서 끝나도록 경계를 고정했습니다.",
                     diagram: {
                         before: `graph TD
     H["use-scenario-form-state.ts (592줄)\\nuseState ×9  /  useRef ×4\\n수동 validation · Create/Edit 분기 혼재"]
@@ -307,6 +310,7 @@ export const editScenarioFormSchema = baseScenarioFormSchema;`,
                             "숫자로는 훅·조립 컴포넌트 코드가 크게 줄었고, 훅 안에 있던 수동 상태·분산 검증은 스키마와 폼 레이어로 옮겨졌습니다.",
                             "그 결과 단일 훅에 숨겨져 있던 복잡도를 스키마(검증), 훅(폼 생명주기), 컴포넌트(UI·비즈니스 규칙)로 나눴습니다.",
                             "기능 추가나 수정 시 어느 레이어를 변경해야 하는지 명확해져, 변경 영향 범위를 예측하고 안전하게 수정할 수 있는 구조로 개선했습니다.",
+                            "또한 렌더 범위 축소로 인해 입력 지연 없이 즉각적인 피드백이 가능해졌고, 필드가 많은 폼에서도 안정적인 입력 경험을 유지할 수 있게 되었습니다.",
                         ],
                     },
                 },
