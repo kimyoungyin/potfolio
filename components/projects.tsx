@@ -97,12 +97,12 @@ function ChallengeItem({
                         </h4>
                         <Badge
                             variant="outline"
-                            className="print:hidden text-[10px] px-1.5 py-0 h-4 rounded shrink-0"
+                            className="print:hidden text-xs px-2 py-0.5 h-5 rounded shrink-0"
                         >
-                            Case Study
+                            케이스 스터디
                         </Badge>
                     </div>
-                    <p className="w-full text-left text-sm text-muted-foreground leading-relaxed">
+                    <p className="w-full text-left text-base text-muted-foreground leading-relaxed">
                         {challenge.summary}
                     </p>
                 </div>
@@ -148,13 +148,13 @@ function DiagramComparison({ diagram }: { diagram: DiagramPair }) {
             <div className="flex flex-col gap-6">
                 <div className="min-w-0 flex flex-col gap-2">
                     <span className="text-xs font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-400">
-                        Before
+                        개선 전
                     </span>
                     <MermaidDiagram diagram={before} />
                 </div>
                 <div className="min-w-0 flex flex-col gap-2">
                     <span className="text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
-                        After
+                        개선 후
                     </span>
                     <MermaidDiagram diagram={after} />
                 </div>
@@ -218,7 +218,7 @@ function CaseStudyParagraphs({
                 <p
                     key={i}
                     className={cn(
-                        "leading-relaxed text-sm",
+                        "leading-relaxed text-base",
                         className ?? "text-muted-foreground",
                     )}
                 >
@@ -281,7 +281,7 @@ function CaseStudyContent({
                 <div className="mx-auto max-w-4xl">
                     {/* Case Study Header */}
                     <div
-                        className="mb-10 animate-fade-in"
+                        className="mb-8 animate-fade-in"
                         style={{
                             animationDelay: "50ms",
                             animationFillMode: "both",
@@ -291,9 +291,6 @@ function CaseStudyContent({
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                             Technical Deep Dive
                         </div>
-                        <p className="text-muted-foreground text-sm">
-                            From problem identification to measurable impact
-                        </p>
                     </div>
 
                     {/* Timeline Layout - Problem → Investigation → Solution */}
@@ -351,7 +348,7 @@ function CaseStudyContent({
                                                         )}
                                                     />
                                                 </div>
-                                                <h5 className="text-sm font-semibold text-foreground">
+                                                <h5 className="text-base font-semibold text-foreground">
                                                     {step.label}
                                                 </h5>
                                             </div>
@@ -391,13 +388,13 @@ function CaseStudyContent({
                                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10 dark:bg-violet-500/20">
                                     <Network className="h-4 w-4 text-violet-500" />
                                 </div>
-                                <h5 className="text-sm font-semibold text-foreground">
+                                <h5 className="text-base font-semibold text-foreground">
                                     Architecture
                                 </h5>
                             </div>
                             <div className="pl-0 sm:pl-11">
                                 {caseStudy.architectureIntro ? (
-                                    <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+                                    <p className="mb-4 text-base leading-relaxed text-muted-foreground">
                                         {caseStudy.architectureIntro}
                                     </p>
                                 ) : null}
@@ -420,7 +417,7 @@ function CaseStudyContent({
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 dark:bg-blue-500/20">
                                 <Code2 className="h-4 w-4 text-blue-500" />
                             </div>
-                            <h5 className="text-sm font-semibold text-foreground">
+                            <h5 className="text-base font-semibold text-foreground">
                                 Implementation
                             </h5>
                         </div>
@@ -457,7 +454,7 @@ function CaseStudyContent({
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20">
                                 <TrendingUp className="h-4 w-4 text-emerald-500" />
                             </div>
-                            <h5 className="text-sm font-semibold text-foreground">
+                            <h5 className="text-base font-semibold text-foreground">
                                 Results & Impact
                             </h5>
                         </div>
@@ -482,7 +479,7 @@ function CaseStudyContent({
                                 >
                                     <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-emerald-500/10 blur-xl transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
                                     <div className="relative flex flex-col gap-1">
-                                        <span className="text-xs font-medium text-foreground/80">
+                                        <span className="text-sm font-medium text-foreground/80">
                                             {metric.label}
                                         </span>
                                         <span className="text-2xl font-bold tracking-tight text-foreground">
@@ -525,7 +522,7 @@ function CaseStudyContent({
                             className="gap-2 text-muted-foreground hover:text-foreground"
                         >
                             <ChevronUp className="h-4 w-4" />
-                            Hide Case Study
+                            닫기
                         </Button>
                     </div>
                 </div>
@@ -655,10 +652,12 @@ function ProjectCard({ project }: { project: Project }) {
         >
             <div className="flex flex-col ">
                 {/* Image Carousel */}
-                <ProjectImageCarousel
-                    images={project.images}
-                    title={project.title}
-                />
+                {!project.isPrivate && (
+                    <ProjectImageCarousel
+                        images={project.images}
+                        title={project.title}
+                    />
+                )}
                 <div className="p-6 lg:p-8">
                     {/* Header */}
                     <div className="flex flex-col gap-2">
@@ -666,13 +665,21 @@ function ProjectCard({ project }: { project: Project }) {
                             <h3 className="text-xl font-semibold text-foreground">
                                 {project.title}
                             </h3>
+                            {project.isPrivate && (
+                                <Badge
+                                    variant="outline"
+                                    className="rounded-full px-2.5 py-0.5 text-xs font-medium"
+                                >
+                                    비공개 프로젝트
+                                </Badge>
+                            )}
                         </div>
                         <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                             <span>{project.duration}</span>
                             <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
                             <Badge
                                 variant="outline"
-                                className="rounded-full text-xs font-normal"
+                                className="rounded-full px-2.5 py-0.5 text-xs font-normal"
                             >
                                 {project.teamSize}
                             </Badge>
@@ -685,14 +692,19 @@ function ProjectCard({ project }: { project: Project }) {
                     {/* Body */}
                     <div className="pt-8 flex flex-col gap-8">
                         {/* Features */}
-                        <ul className="grid gap-1.5 text-sm text-muted-foreground sm:grid-cols-2">
-                            {project.features.map((feature, i) => (
-                                <li key={i} className="flex items-start gap-2">
-                                    <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-foreground/30" />
-                                    {feature}
-                                </li>
-                            ))}
-                        </ul>
+                        <div className="flex flex-col gap-2">
+                            <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/80">
+                                담당 역할 요약
+                            </h4>
+                            <ul className="grid gap-1.5 text-base text-muted-foreground sm:grid-cols-2">
+                                {project.features.map((feature, i) => (
+                                    <li key={i} className="flex items-start gap-2">
+                                        <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-foreground/30" />
+                                        {feature}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
 
                         {/* Tech Stack */}
                         <div className="flex flex-wrap gap-2">
@@ -712,8 +724,9 @@ function ProjectCard({ project }: { project: Project }) {
                             <div className="flex flex-col gap-4 pt-2">
                                 <div className="flex items-center gap-2">
                                     <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                                    <h4 className="text-sm font-semibold text-foreground">
-                                        Challenges ({project.challenges.length})
+                                    <h4 className="text-base font-semibold text-foreground">
+                                        주요 도전 과제 (
+                                        {project.challenges.length})
                                     </h4>
                                 </div>
                                 <div className="flex flex-col gap-3">
@@ -747,7 +760,7 @@ function ProjectCard({ project }: { project: Project }) {
                                         className="gap-2"
                                     >
                                         <ExternalLink className="h-3.5 w-3.5" />
-                                        Live Demo
+                                        라이브 데모
                                     </Link>
                                 </Button>
                             )}
@@ -765,7 +778,7 @@ function ProjectCard({ project }: { project: Project }) {
                                         className="gap-2"
                                     >
                                         <Github className="h-3.5 w-3.5" />
-                                        Source
+                                        소스 코드
                                     </Link>
                                 </Button>
                             )}
@@ -785,7 +798,7 @@ export function Projects() {
                     {/* Section Header */}
                     <div className="flex flex-col gap-3">
                         <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-                            Featured Projects
+                            주요 프로젝트
                         </h2>
                     </div>
 

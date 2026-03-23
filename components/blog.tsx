@@ -10,7 +10,7 @@ export function Blog() {
                     {/* Section Header */}
                     <div className="flex flex-col gap-3">
                         <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-                            Writing
+                            글 목록
                         </h2>
                     </div>
 

@@ -9,7 +9,7 @@ export function Skills() {
                     {/* Section Header */}
                     <div className="flex flex-col gap-3">
                         <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-                            Technical Skills
+                            기술 스택
                         </h2>
                     </div>
 

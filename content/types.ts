@@ -46,6 +46,8 @@ export interface Project {
     teamSize: string;
     description: string;
     images: string[];
+    /** private 저장소/서비스 등 공개 제약 여부 */
+    isPrivate?: boolean;
     features: string[];
     techStack: string[];
     liveUrl: string;
