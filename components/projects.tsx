@@ -72,7 +72,7 @@ function ChallengeItem({
     };
 
     return (
-        <div className="flex flex-col rounded-xl border border-border bg-card/50 shadow-sm overflow-hidden">
+        <div className="flex flex-col rounded-xl border border-border bg-card/80 overflow-hidden">
             {/* Challenge Header */}
             <button
                 type="button"
@@ -91,7 +91,7 @@ function ChallengeItem({
 
                 {/* Challenge Content */}
                 <div className="flex flex-1 flex-col gap-1.5 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-start gap-2">
                         <h4 className="font-medium text-foreground text-sm">
                             {challenge.title}
                         </h4>
@@ -102,7 +102,7 @@ function ChallengeItem({
                             Case Study
                         </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
+                    <p className="w-full text-left text-sm text-muted-foreground leading-relaxed">
                         {challenge.summary}
                     </p>
                 </div>
@@ -183,7 +183,7 @@ function CaseStudyCodeBlock({
                 </p>
             ) : null}
             <div className="rounded-xl border border-border/40 overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-white/5 bg-zinc-100/80 dark:bg-[#161b22]">
+                <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/40 bg-muted/35 dark:bg-muted/20">
                     <div className="flex items-center gap-2">
                         <Code2 className="h-3 w-3 text-muted-foreground" />
                         <span className="text-xs text-muted-foreground font-mono">
@@ -276,7 +276,7 @@ function CaseStudyContent({
     ];
 
     return (
-        <div className="bg-muted/40 border-l-4 border-l-emerald-500/50">
+        <div className="bg-muted/55 border-l-4 border-l-emerald-500/50">
             <div className="px-6 py-8 lg:px-10 lg:py-10">
                 <div className="mx-auto max-w-4xl">
                     {/* Case Study Header */}
@@ -317,7 +317,7 @@ function CaseStudyContent({
                                         <div className="relative z-10 hidden sm:flex shrink-0">
                                             <div
                                                 className={cn(
-                                                    "flex h-8 w-8 items-center justify-center rounded-full border-2 bg-card shadow-sm",
+                                                    "flex h-8 w-8 items-center justify-center rounded-full border-2 bg-card",
                                                     step.borderColor,
                                                 )}
                                             >
@@ -333,7 +333,7 @@ function CaseStudyContent({
                                         {/* Content card */}
                                         <div
                                             className={cn(
-                                                "flex-1 rounded-xl border bg-card p-5 transition-all duration-300 hover:shadow-md",
+                                                "flex-1 rounded-xl border bg-card p-5 transition-all duration-300 hover:bg-card/70",
                                                 step.borderColor,
                                             )}
                                         >
@@ -474,7 +474,7 @@ function CaseStudyContent({
                             {caseStudy.impact.metrics.map((metric, i) => (
                                 <div
                                     key={i}
-                                    className="@container group relative overflow-hidden rounded-xl border border-border/50 bg-card p-4 transition-all duration-300 hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/5 animate-fade-up"
+                                    className="@container group relative overflow-hidden rounded-xl border border-border/50 bg-card p-4 transition-all duration-300 hover:border-emerald-500/40 hover:bg-card/70 animate-fade-up"
                                     style={{
                                         animationDelay: `${550 + i * 50}ms`,
                                         animationFillMode: "both",
@@ -651,7 +651,7 @@ function ProjectCard({ project }: { project: Project }) {
     return (
         <article
             ref={cardRef}
-            className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-md scroll-m-16"
+            className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-foreground/20 scroll-m-16"
         >
             <div className="flex flex-col ">
                 {/* Image Carousel */}

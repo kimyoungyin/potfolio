@@ -3,13 +3,16 @@ import { educationList } from "@/content/education";
 
 export function Education() {
     return (
-        <section id="education" className="border-t border-border bg-section-alt">
+        <section
+            id="education"
+            className="border-t border-border bg-section-alt"
+        >
             <div className="mx-auto max-w-5xl px-6 py-28 md:py-32">
                 <div className="flex flex-col gap-16">
                     {/* Section Header */}
                     <div className="flex flex-col gap-3">
                         <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-                            학력
+                            Education
                         </h2>
                     </div>
 
@@ -20,14 +23,14 @@ export function Education() {
                                 <GraduationCap className="h-4 w-4 text-muted-foreground" />
                             </div>
                             <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/70">
-                                    학력
+                                학력
                             </span>
                         </div>
                         <div className="flex flex-col gap-5">
                             {educationList.map((item) => (
                                 <div
                                     key={`${item.institution}-${item.title}-${item.period}`}
-                                    className="flex flex-col gap-2 rounded-xl border border-border bg-card p-5 shadow-sm transition-all duration-300 hover:border-foreground/20 hover:shadow-md"
+                                    className="flex flex-col gap-2 rounded-xl border border-border bg-card p-5 transition-all duration-300 hover:border-foreground/30"
                                 >
                                     <h3 className="font-medium text-foreground leading-snug">
                                         {item.institution} {item.title}

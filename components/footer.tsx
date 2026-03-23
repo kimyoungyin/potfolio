@@ -4,7 +4,7 @@ import { heroContacts, heroProfile } from "@/content/hero";
 
 export function Footer() {
     return (
-        <footer className="border-t border-border">
+        <footer className="border-t border-border/60 bg-section-alt">
             <div className="mx-auto max-w-5xl px-6 py-16">
                 {/* Bottom Section */}
                 <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">

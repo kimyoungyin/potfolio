@@ -1,5 +1,3 @@
-"use client";
-
 import { Badge } from "@/components/ui/badge";
 import { skillCategories } from "@/content/skills";
 
@@ -17,7 +15,7 @@ export function Skills() {
 
                     {/* Skills Grid */}
                     <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-                        {skillCategories.map((category, categoryIndex) => (
+                        {skillCategories.map((category) => (
                             <div
                                 key={category.name}
                                 className="flex flex-col gap-5"
@@ -30,7 +28,7 @@ export function Skills() {
                                         (skill, skillIndex) => (
                                             <Badge
                                                 key={`${category.name}-${skillIndex}`}
-                                                variant="secondary"
+                                                variant="outline"
                                                 className="rounded-full px-2.5 py-0.5 text-xs font-normal"
                                             >
                                                 {skill}

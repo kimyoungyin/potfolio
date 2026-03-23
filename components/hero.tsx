@@ -15,7 +15,7 @@ export function Hero() {
             <div className="flex flex-col gap-12">
                 {/* Avatar - Now at the top */}
                 <div
-                    className="flex justify-start opacity-0 animate-fade-up"
+                    className="flex justify-start opacity-0 animate-fade-up motion-reduce:opacity-100 motion-reduce:animate-none"
                 >
                     <div className="relative">
                         <div className="absolute -inset-1 rounded-full bg-linear-to-br from-foreground/5 to-foreground/10 blur-xl" />
@@ -41,13 +41,13 @@ export function Hero() {
                 {/* Text Content */}
                 <div className="flex flex-col gap-8 md:max-w-2xl">
                     <div
-                        className="flex flex-col gap-4 opacity-0 animate-fade-up animation-delay-100"
+                        className="flex flex-col gap-4 opacity-0 animate-fade-up animation-delay-100 motion-reduce:opacity-100 motion-reduce:animate-none"
                     >
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <MapPin className="h-3.5 w-3.5" />
                             <span>{heroProfile.location}</span>
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="animate-pulse text-emerald-600 dark:text-emerald-400">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
+                            <span className="animate-pulse text-emerald-600 dark:text-emerald-400 motion-reduce:animate-none">
                                 {heroProfile.statusText}
                             </span>
                         </div>
@@ -57,14 +57,14 @@ export function Hero() {
                     </div>
 
                     <p
-                        className="text-lg text-muted-foreground leading-relaxed text-pretty opacity-0 animate-fade-up animation-delay-200"
+                        className="text-lg text-muted-foreground leading-relaxed text-pretty opacity-0 animate-fade-up animation-delay-200 motion-reduce:opacity-100 motion-reduce:animate-none"
                     >
                         {heroIntro}
                     </p>
 
                     {/* Contact Links */}
                     <div
-                        className="flex flex-wrap items-center gap-6 opacity-0 animate-fade-up animation-delay-300"
+                        className="flex flex-wrap items-center gap-6 opacity-0 animate-fade-up animation-delay-300 motion-reduce:opacity-100 motion-reduce:animate-none"
                     >
                         {heroContacts.map((contact) => {
                             return (
@@ -90,7 +90,7 @@ export function Hero() {
 
                     {/* CTA Buttons */}
                     <div
-                        className="flex flex-wrap gap-4 pt-2 opacity-0 animate-fade-up animation-delay-400"
+                        className="flex flex-wrap gap-4 pt-2 opacity-0 animate-fade-up animation-delay-400 motion-reduce:opacity-100 motion-reduce:animate-none"
                     >
                         {heroCtas.map((cta) => {
                             const isPrimary = cta.variant === "primary";

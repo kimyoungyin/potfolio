@@ -22,7 +22,7 @@ export function Blog() {
                                 href={post.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="group relative flex flex-col gap-4 rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:border-foreground/20 hover:shadow-md"
+                                className="group relative flex flex-col gap-4 rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-foreground/30"
                             >
                                 <div className="flex items-start justify-between gap-4">
                                     <h3 className="font-medium text-foreground leading-snug transition-colors group-hover:text-foreground">

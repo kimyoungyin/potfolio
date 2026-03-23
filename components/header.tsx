@@ -42,8 +42,8 @@ export function Header() {
         <header
             className={`print:hidden sticky top-0 z-50 w-full transition-all duration-500 ${
                 isScrolled
-                    ? "border-b border-border/50 bg-background/80 backdrop-blur-xl shadow-sm"
-                    : "bg-transparent"
+                    ? "border-b border-border/60 bg-background/90 backdrop-blur-md"
+                    : "border-b border-border/40 bg-background/80"
             }`}
         >
             <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
@@ -135,7 +135,7 @@ export function Header() {
                 }`}
             >
                 <div className="overflow-hidden">
-                    <nav className="border-b border-border/50 bg-background/95 backdrop-blur-xl px-6 py-4">
+                    <nav className="border-b border-border/50 bg-background/90 backdrop-blur-md px-6 py-4">
                         <div className="flex flex-col gap-1">
                             {navItems.map((item, index) => (
                                 <Link
