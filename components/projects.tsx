@@ -593,43 +593,63 @@ function ProjectImageCarousel({
                             key={i}
                             className="relative min-w-0 shrink-0 grow-0 basis-full h-full"
                         >
-                            <Image
-                                src={src}
-                                alt={`${title} screenshot ${i + 1}`}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 1024px) 100vw, 960px"
-                            />
+                            {(() => {
+                                // 슬라이드 DOM은 유지하되, 실제로는 주변(prev/current/next)만 렌더링해서
+                                // 네트워크 요청을 줄입니다.
+                                const shouldRender =
+                                    i === currentIndex ||
+                                    i === currentIndex - 1 ||
+                                    i === currentIndex + 1;
+
+                                if (!shouldRender) return null;
+
+                                return (
+                                    <Image
+                                        src={src}
+                                        alt={`${title} screenshot ${i + 1}`}
+                                        loading={i === 0 ? "eager" : "lazy"}
+                                        fill
+                                        className="object-cover"
+                                        sizes="(max-width: 1024px) 100vw, 960px"
+                                    />
+                                );
+                            })()}
                         </div>
                     ))}
                 </div>
             </div>
             {images.length > 1 && (
                 <>
-                    <button
-                        type="button"
-                        onClick={() => emblaApi?.scrollPrev()}
-                        disabled={!canScrollPrev}
-                        aria-label="Previous slide"
-                        className={cn(
-                            "absolute left-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-background/70 backdrop-blur-sm border border-border/50 flex items-center justify-center transition-opacity",
-                            !canScrollPrev && "opacity-30 cursor-not-allowed",
-                        )}
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => emblaApi?.scrollNext()}
-                        disabled={!canScrollNext}
-                        aria-label="Next slide"
-                        className={cn(
-                            "absolute right-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-background/70 backdrop-blur-sm border border-border/50 flex items-center justify-center transition-opacity",
-                            !canScrollNext && "opacity-30 cursor-not-allowed",
-                        )}
-                    >
-                        <ChevronRight className="h-4 w-4" />
-                    </button>
+                    {canScrollPrev && (
+                        <button
+                            type="button"
+                            onClick={() => emblaApi?.scrollPrev()}
+                            disabled={!canScrollPrev}
+                            aria-label="Previous slide"
+                            className={cn(
+                                "absolute left-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-background/70 backdrop-blur-sm border border-border/50 flex items-center justify-center transition-opacity",
+                                !canScrollPrev &&
+                                    "opacity-30 cursor-not-allowed",
+                            )}
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </button>
+                    )}
+                    {canScrollNext && (
+                        <button
+                            type="button"
+                            onClick={() => emblaApi?.scrollNext()}
+                            disabled={!canScrollNext}
+                            aria-label="Next slide"
+                            className={cn(
+                                "absolute right-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-background/70 backdrop-blur-sm border border-border/50 flex items-center justify-center transition-opacity",
+                                !canScrollNext &&
+                                    "opacity-30 cursor-not-allowed",
+                            )}
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </button>
+                    )}
                     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
                         {images.map((_, i) => (
                             <button
