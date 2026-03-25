@@ -724,7 +724,7 @@ function ProjectCard({ project }: { project: Project }) {
                         {/* Features */}
                         <div className="flex flex-col gap-2">
                             <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/80">
-                                담당 역할 요약
+                                주요 담당 역할
                             </h4>
                             <ul className="grid gap-1.5 text-base text-muted-foreground sm:grid-cols-2">
                                 {project.features.map((feature, i) => (
