@@ -35,8 +35,6 @@ export function Blog() {
                                 </p>
                                 <div className="flex items-center gap-3 text-xs text-muted-foreground/70">
                                     <span>{post.date}</span>
-                                    <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
-                                    <span>{post.readTime}</span>
                                 </div>
                             </Link>
                         ))}
