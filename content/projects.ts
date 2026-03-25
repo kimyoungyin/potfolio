@@ -582,38 +582,190 @@ export const editScenarioFormSchema = baseScenarioFormSchema;`,
         teamSize: "개인 프로젝트 (100%)",
         description:
             "군 복무 중 700~800권 규모 도서에 대한 검색 시스템이 없고 수기·분산 관리로 자료와 실제 위치가 어긋나던 문제를 해결하기 위해 개발한 도서 위치 안내 서비스입니다.",
-        images: [],
+        images: [
+            "/images/projects/seongryoung/search-list.png",
+            "/images/projects/seongryoung/location-modal.png",
+            "/images/projects/seongryoung/location-detail.png",
+        ],
         features: [
-            "Feature placeholder 1",
-            "Feature placeholder 2",
-            "Feature placeholder 3",
+            "URL Query(`/?query=...`)로 검색 상태를 유지해 새로고침/공유 시 동일 결과를 재현하도록 구현했습니다.",
+            "`ilike` 기반 부분 매칭 검색을 적용해 입력이 짧아도 결과를 빠르게 탐색할 수 있게 했고, 결과가 없을 때도 안내 UI를 제공했습니다.",
+            "검색 중에는 로딩 인디케이터와 추천 검색어 클릭 흐름을 제공해 사용 흐름이 끊기지 않도록 관리했습니다.",
+            "검색 결과 카드에서 “위치 보기” 클릭 시 `/location/:id`로 이동하는 Hard navigation을 지원했습니다.",
+            "동시에 검색 컨텍스트를 유지하며 위치 상세를 모달로 오버레이하는 Soft navigation(Intercepting/Parallel route)을 구현했습니다.",
+            "모달 오픈 시 `body` 스크롤 고정 및 top 보정을 적용해 배경 스크롤/레이아웃 흔들림을 줄였습니다.",
+            "`Suspense`와 Skeleton fallback을 적용해 초기 로딩 공백과 렌더 점프를 최소화했습니다.",
+            "`generateMetadata`를 통해 검색 결과/상세 페이지별 SEO 및 Open Graph 이미지를 동적으로 생성했습니다.",
+            "위치 지도 화면은 ImageKit CDN + `next/image`(custom loader, `priority`, `sizes`)로 LCP를 최적화하고, 표지는 Supabase Storage로 전달했습니다.",
         ],
         techStack: [
             "Next.js 15",
             "React 19",
             "TypeScript",
             "Tailwind CSS",
-            "MySQL (AWS RDS)",
-            "AWS S3",
+            "이전: MySQL (AWS RDS)",
+            "변경: Supabase (PostgreSQL)",
+            "이전: AWS S3",
+            "변경: Supabase Storage",
+            "ImageKit CDN",
+            "next/image",
+            "Server Actions",
+            "React cache()",
             "Vercel",
         ],
         liveUrl: "https://seongryung.vercel.app",
         githubUrl: "https://github.com/kimyoungyin/seongryung",
         challenges: [
             {
-                title: "Challenge placeholder 1",
-                summary: "Challenge summary placeholder 1",
-                caseStudy: placeholderCaseStudy,
-            },
-            {
-                title: "Challenge placeholder 2",
-                summary: "Challenge summary placeholder 2",
-                caseStudy: placeholderCaseStudy,
-            },
-            {
-                title: "Challenge placeholder 3",
-                summary: "Challenge summary placeholder 3",
-                caseStudy: placeholderCaseStudy,
+                title: "이미지 서빙 구조 개선과 LCP 최적화",
+                summary:
+                    "메인 화면의 책 위치 이미지가 LCP 요소로 늦게 그려지며 Slow 4G에서 LCP가 4.69s까지 지연되는 문제를, public 정적 서빙에서 Supabase Storage + ImageKit CDN·next/image priority로 옮겨 Cold 기준 LCP를 2.81s(약 40% 단축)까지 끌어올렸습니다.",
+                caseStudy: {
+                    problem: [
+                        "기존에는 고해상도 이미지를 Next.js `public` 디렉토리에서 직접 서빙하는 단순한 구조였습니다.",
+                        "사용자 테스트 과정에서 메인 화면의 핵심 콘텐츠인 ‘책 위치 이미지’가 늦게 렌더링되는 문제가 확인되었습니다.",
+                        "해당 이미지는 페이지에서 가장 큰 영역을 차지하는 LCP 요소였고, 로딩 지연으로 초기 화면이 비어 보이는 시간이 길어져 사용자 경험이 저하되었습니다.",
+                        "고해상도 원본 전송으로 네트워크 비용이 커졌고, Slow 4G 환경 기준 LCP가 4.69s까지 증가하는 등 첫 방문 품질이 특히 나빠졌습니다.",
+                        "결국 이 문제는 특정 컴포넌트 버그라기보다, 이미지 전달 방식과 요청 시점이 맞물린 구조적 병목으로 인한 성능 저하로 정의했습니다.",
+                    ],
+                    investigation: [
+                        "원인을 좁히기 위해 Chrome DevTools의 Performance, Network, Lighthouse를 병행해 측정했습니다.",
+                        "JPEG 기준 약 76KB 용량에 네트워크 다운로드만 약 2.45s가 소요되는 구간이 있었고, 전송 데이터 크기 자체가 병목임이 드러났습니다.",
+                        "동시에 LCP 후보 이미지에 대해 리소스 요청 시작이 늦고, 우선순위가 상대적으로 낮게 잡히는 Resource Load Delay도 함께 관찰되었습니다.",
+                        "캐시가 채워진 Warm 상태에서는 체감이 나아보여도, Cold Start에서는 동일 구조가 반복적으로 성능 저하를 만들었습니다.",
+                        "결국, 문제의 본질은 서버 응답 속도가 아니라 전송 데이터 크기와 요청 타이밍의 결합으로 재정의했습니다.",
+                        "이에 따라 단순 서버 튜닝이 아니라 이미지 전달 경로와 포맷·크기·선요청 전략을 함께 바꾸는 방향으로 Solution을 설계했습니다.",
+                    ],
+                    solution: [
+                        "구조적 병목을 줄이기 위해 이미지 경로를 분리했습니다. 책 표지 등 가벼운 기존 리소스는 Supabase URL을 유지하고, 위치 지도처럼 대용량이자 LCP에 영향이 큰 이미지는 ImageKit 경로로 변경했습니다.",
+                        "ImageKit 경로에는 next/image 커스텀 로더가 `tr=w-{width},q-{quality},f-auto`를 부여하도록 구성해 포맷 자동 선택과 폭 기반 리사이징을 동시에 적용했습니다.",
+                        "풀 페이지(`/location/[id]`)에서는 상단 표지에 `priority`를 두고 지도는 `fill + sizes + 종횡비 래퍼`로 요청 폭만 최적화했습니다. 반대로 인터셉트 모달에서는 지도가 메인 컨텐츠로써 화면 대부분을 차지하므로 지도에 `priority`를 적용했습니다.",
+                        "물론 이미지 최적화 방식에 대해 Next.js Image Optimization(내장 변환), Cloudflare Images(별도 변환/캐시 파이프라인)도 함께 검토했습니다.",
+                        "하지만 Next.js 내장은 변환이 서버에서 발생하므로 트래픽 증가 시 비용과 부하가 커질 수 있고, Cloudflare Images는 운영 관점에서 추가 파이프라인 구성이 필요했습니다.",
+                        '반면 ImageKit은 URL 파라미터 기반 실시간 변환과 글로벌 Edge 캐싱을 제공하고, 기존 Storage(Supabase)와의 연동이 비교적 단순해 "변환 + 캐싱 + 전달"을 한 경로에서 처리할 수 있어 선택했습니다.',
+                        "이러한 설계를 구조 관점에서 보면 다음과 같은 흐름으로 정리할 수 있습니다.",
+                    ],
+                    solutionCode: {
+                        caption:
+                            "next/image 커스텀 로더로 ImageKit 변환 파라미터를 일관 적용",
+                        codeLanguage: "typescript",
+                        codeSnippet: `// imageKitLoader.ts (발췌)
+import type { ImageLoaderProps } from "next/image";
+
+const IK_HOST = "ik.imagekit.io";
+
+export default function imageKitLoader({
+  src,
+  width,
+  quality,
+}: ImageLoaderProps): string {
+  const q = quality ?? 75;
+  if (src.startsWith("/")) return src;
+
+  try {
+    const url = new URL(src);
+    if (url.hostname === IK_HOST) {
+      url.searchParams.set("tr", \`w-\${width},q-\${q},f-auto\`);
+      return url.toString();
+    }
+  } catch {}
+
+  return src;
+}`,
+                    },
+                    architectureIntro: [
+                        "기존에는 브라우저 요청이 Next.js 서버를 거쳐 `public` 정적 이미지를 직접 내려받는 단일 경로였습니다.",
+                        "개선 이후에는 브라우저가 Next.js로부터 HTML을 받고, 위치 지도는 ImageKit Edge(변환·캐시), 책 표지는 Supabase Origin으로 각각 직접 요청하는 이중 경로로 분리했습니다.",
+                        "CDN 경로를 바꾸는 옵션이 아니라 preload 힌트로 요청 시점을 앞당기는 역할인 `priority`를 적용해, 전달 경로(어디서 받는가)와 요청 시점(언제 받는가)을 분리 제어할 수 있도록 하여 Cold Start 편차와 LCP 지연을 함께 줄입니다.",
+                    ],
+                    diagram: {
+                        before: `flowchart LR
+Browser[Browser] --> NextServer[Next.js Server]
+NextServer --> PublicDir[public Static Images]`,
+                        after: `flowchart LR
+Browser[Browser] --> NextHTML["Next.js HTML + preload hint (priority image)"]
+Browser --> ImageKit["ImageKit CDN Edge (Location Map)"]
+Browser --> Supabase["Supabase Storage Origin (Book Cover)"]`,
+                    },
+                    implementation: {
+                        description: [
+                            "next.config에서 `images.loaderFile`과 `remotePatterns`를 설정해 ImageKit·Supabase 호스트를 명시적으로 허용하고, 로더 규칙을 전역에서 일관 적용했습니다.",
+                            "위치 지도 URL은 `getLocationImageSrc`로 ImageKit 엔드포인트를 사용하고, `LOCATION_MAP_IMAGE_SIZES` 상수와 `fill`을 결합해 실제 레이아웃 폭에 맞는 요청만 내려가도록 조정했습니다.",
+                            "풀 페이지에서는 상단 표지(`getImageSrc`)에 `priority`를 두고 지도는 non-priority로 운영했으며, 모달 라우트에서는 지도에 `priority`를 적용해 화면 점유율에 맞게 우선순위를 분기했습니다.",
+                            "핵심은 ‘어디서 파일을 두느냐’보다 ‘어떤 포맷·크기·시점으로 전달하느냐’에 두고, 측정 가능한 지표로 Before/After를 맞춰 검증했습니다.",
+                        ],
+                        codeLanguage: "tsx",
+                        codeSnippet: `// app/location/[id]/page.tsx (발췌)
+<div className="relative sm:w-24 sm:h-36 w-16 h-24 self-center">
+  <Image
+    src={getImageSrc(bookInfo.location, bookInfo.id)}
+    alt={bookInfo.title}
+    fill
+    sizes="(min-width: 640px) 6rem, 4rem"
+    className="object-cover rounded-lg"
+    quality={80}
+    priority
+  />
+</div>
+
+<div
+  className="relative mt-4 w-full"
+  style={{ aspectRatio: \`\${LOCATION_IMAGE_SIZE.width} / \${LOCATION_IMAGE_SIZE.height}\` }}
+>
+  <Image
+    src={getLocationImageSrc(bookInfo.location)}
+    alt={bookInfo.title + "이 있는 책장"}
+    fill
+    sizes={LOCATION_MAP_IMAGE_SIZES}
+    className="object-contain"
+  />
+</div>`,
+                    },
+                    impact: {
+                        metrics: [
+                            {
+                                label: "LCP (Cold, Slow 4G)",
+                                value: "4.69s → 2.81s",
+                                description: [
+                                    "약 40% 단축",
+                                    "WebP 변환·리사이징으로 전송 데이터 크기를 줄여 다운로드 시간을 단축",
+                                    "`priority/preload`로 요청 시작 시점을 앞당겨 Resource Load Delay를 낮춤",
+                                ],
+                            },
+                            {
+                                label: "이미지 전송 용량",
+                                value: "76KB → 26KB",
+                                description: [
+                                    "약 66% 감소",
+                                    "WebP·리사이징·품질 파라미터로 바이트 축소",
+                                    "동일 시각 품질 대비 네트워크 비용 절감",
+                                ],
+                            },
+                            {
+                                label: "이미지 다운로드 시간",
+                                value: "2.45s → 1.58s",
+                                description: [
+                                    "약 35% 단축 (Slow 4G)",
+                                    "WebP·리사이징으로 용량을 축소해 전송/다운로드 병목을 제거",
+                                ],
+                            },
+                            {
+                                label: "첫 방문 품질",
+                                value: "1.88s 단축 (Cold LCP)",
+                                description: [
+                                    "Warm만 빠른 구조에서 Cold Start도 안정",
+                                    "사용자 경험 편차 감소",
+                                ],
+                            },
+                        ],
+                        summary: [
+                            "책 표지와 위치 지도의 전달 경로를 분리하고, 지도에는 ImageKit 로더(`f-auto`·폭 기반 `tr`)를 적용해 자산별 전송 전략을 명확히 했습니다.",
+                            "전송 데이터 축소(WebP·리사이징)로 다운로드 비용을 줄이고, `priority` 선요청으로 Resource Load Delay를 낮춰 Cold 기준 LCP를 4.69s에서 2.81s로 개선했습니다. CDN은 최적화된 이미지를 사용자와 가까운 Edge에서 빠르게 전달하는 역할을 담당했습니다.",
+                            "Warm에서만 체감이 나던 한계를 넘어, 첫 방문에서도 핵심 이미지가 빠르게 보이도록 사용자 경험 편차를 줄였습니다.",
+                            "결과적으로 측정된 병목(크기·시점)을 코드 레벨 규칙(로더·sizes·priority)으로 연결해 검증한 성능 개선 사례로 정리할 수 있었습니다.",
+                        ],
+                    },
+                },
             },
         ],
     },
