@@ -623,7 +623,7 @@ export const editScenarioFormSchema = baseScenarioFormSchema;`,
             {
                 title: "이미지 서빙 구조 개선과 LCP 최적화",
                 summary:
-                    "메인 화면의 책 위치 이미지가 LCP 요소로 늦게 그려지며 Slow 4G에서 LCP가 4.69s까지 지연되는 문제를, public 정적 서빙에서 Supabase Storage + ImageKit CDN·next/image priority로 옮겨 Cold 기준 LCP를 2.81s(약 40% 단축)까지 끌어올렸습니다.",
+                    "메인 화면의 책 위치 이미지가 LCP 요소로 늦게 그려지며 Slow 4G 환경에서 LCP가 4.69s까지 지연되는 문제를, public 정적 서빙에서 Supabase Storage + ImageKit CDN·next/image priority로 옮겨 Cold 기준 LCP를 2.81s(약 40% 단축)까지 끌어올렸습니다.",
                 caseStudy: {
                     problem: [
                         "기존에는 고해상도 이미지를 Next.js `public` 디렉토리에서 직접 서빙하는 단순한 구조였습니다.",
