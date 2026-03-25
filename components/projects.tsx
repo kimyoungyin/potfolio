@@ -700,7 +700,7 @@ function ProjectCard({ project }: { project: Project }) {
                                     variant="outline"
                                     className="rounded-full px-2.5 py-0.5 text-xs font-medium"
                                 >
-                                    비공개 프로젝트
+                                    Private
                                 </Badge>
                             )}
                         </div>
@@ -792,7 +792,7 @@ function ProjectCard({ project }: { project: Project }) {
                                         className="gap-2"
                                     >
                                         <ExternalLink className="h-3.5 w-3.5" />
-                                        라이브 데모
+                                        Visit
                                     </Link>
                                 </Button>
                             )}
