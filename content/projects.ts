@@ -46,6 +46,7 @@ export const projects: Project[] = [
             "Zod",
             "Tailwind CSS",
             "Radix UI",
+            "Firebase Cloud Messaging",
             "Vitest",
             "React Testing Library",
             "Playwright",
