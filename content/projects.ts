@@ -568,16 +568,6 @@ export const editScenarioFormSchema = baseScenarioFormSchema;`,
                 summary: "Challenge summary placeholder 1",
                 caseStudy: placeholderCaseStudy,
             },
-            {
-                title: "Challenge placeholder 2",
-                summary: "Challenge summary placeholder 2",
-                caseStudy: placeholderCaseStudy,
-            },
-            {
-                title: "Challenge placeholder 3",
-                summary: "Challenge summary placeholder 3",
-                caseStudy: placeholderCaseStudy,
-            },
         ],
     },
     {
@@ -594,6 +584,8 @@ export const editScenarioFormSchema = baseScenarioFormSchema;`,
             "/images/projects/seongryoung/after-performance-coldstart.png",
             "/images/projects/seongryoung/before-network-coldstart.png",
             "/images/projects/seongryoung/after-network-coldstart.png",
+            "/images/projects/seongryoung/location-before-preload.png",
+            "/images/projects/seongryoung/location-after-preload.png",
         ],
         features: [
             "URL Query(`/?query=...`)로 검색 상태를 유지해 새로고침/공유 시 동일 결과를 재현했습니다.",
@@ -601,10 +593,11 @@ export const editScenarioFormSchema = baseScenarioFormSchema;`,
             "검색 중 로딩 인디케이터와 추천 검색어 클릭 플로우를 제공해 사용 흐름이 끊기지 않게 했습니다.",
             "검색 결과 카드에서 “위치 보기”를 통해 `/location/:id`로 이동하는 Hard navigation을 지원했습니다.",
             "위치 상세는 Intercepting/Parallel route 모달로 오버레이하는 Soft navigation을 구현했습니다.",
-            "모달 오픈 시 body 스크롤 고정 및 top 보정을 적용해 배경 스크롤/레이아웃 흔들림을 줄였습니다.",
+            "모달 오픈 시 useLayoutEffect로 body 스크롤 고정 및 top 보정을 적용해 배경 스크롤/레이아웃 흔들림을 줄였습니다.",
             "`Suspense`와 Skeleton fallback으로 초기 로딩 공백과 렌더 점프를 최소화했습니다.",
             "`generateMetadata`로 검색/상세 페이지별 SEO 및 Open Graph를 동적으로 생성했습니다.",
-            "위치 지도 이미지는 ImageKit CDN + `next/image`(custom loader, `priority`, `sizes`)로 LCP 관점을 반영해 전달 경로를 최적화했습니다.",
+            "검색 결과 카드 표지 `next/image`는 lazy를 기본으로 두되, 첫 8개에만 `priority`를 주어 첫 렌더링 체감 성능 저하를 줄였습니다.",
+            "고해상도 위치 지도 이미지는 ImageKit CDN + `next/image`로 전달하고, 검색 카드에서 상세·모달 진입 이전에 지도를 선요청해 전환 직후 공백과 LCP를 줄였습니다(`onMouseEnter` + 모바일 대응 `onPointerDown`).",
         ],
         techStack: [
             "Next.js 15",
@@ -622,66 +615,74 @@ export const editScenarioFormSchema = baseScenarioFormSchema;`,
         githubUrl: "https://github.com/kimyoungyin/seongryung",
         challenges: [
             {
-                title: "이미지 서빙 구조 개선과 LCP 최적화",
+                title: "CDN 기반 이미지 서빙 구조 개선 + 이미지 preload로 LCP 최적화",
                 summary:
-                    "메인 화면의 책 위치 이미지가 LCP 요소로 늦게 그려지며 Slow 4G 환경에서 LCP가 4.69s까지 지연되는 문제를, public 정적 서빙에서 Supabase Storage + ImageKit CDN·next/image priority로 옮겨 Cold 기준 LCP를 2.81s(약 40% 단축)까지 끌어올렸습니다.",
+                    "메인 화면의 고해상도 책 위치 이미지가 LCP 요소로 늦게 그려지며 Slow 4G에서 LCP가 4.69s까지 지연되는 문제를, public 정적 서빙에서 Supabase Storage + ImageKit CDN로 옮겨 Cold 기준 LCP를 2.81s(약 40% 단축)까지 개선했습니다. 이어서 검색 카드→위치 상세 페이지 플로우에서는, 링크 `onMouseEnter`와 터치 환경을 고려한 `onPointerDown`에서 동일 선요청 로직을 실행해 네비게이션 이전에 이미지 요청을 미리 열었고, LCP 마커는 약 ~5.8s에서 ~4.3s로 상대 개선됐습니다.",
                 caseStudy: {
                     problem: [
                         "기존에는 고해상도 이미지를 Next.js `public` 디렉토리에서 직접 서빙하는 단순한 구조였습니다.",
-                        "사용자 테스트 과정에서 메인 화면의 핵심 콘텐츠인 ‘책 위치 이미지’가 늦게 렌더링되는 문제가 확인되었습니다.",
-                        "해당 이미지는 페이지에서 가장 큰 영역을 차지하는 LCP 요소였고, 로딩 지연으로 초기 화면이 비어 보이는 시간이 길어져 사용자 경험이 저하되었습니다.",
-                        "고해상도 원본 전송으로 네트워크 비용이 커졌고, Slow 4G 환경 기준 LCP가 4.69s까지 증가하는 등 첫 방문 품질이 특히 나빠졌습니다.",
-                        "결국 이 문제는 특정 컴포넌트 버그라기보다, 이미지 전달 방식과 요청 시점이 맞물린 구조적 병목으로 인한 성능 저하로 정의했습니다.",
+                        "하지만, 사용자 테스트 과정에서 메인 화면의 핵심 콘텐츠인 ‘책 위치 이미지’가 늦게 렌더링되는 문제가 확인되었습니다.",
+                        "해당 이미지는 페이지에서 가장 큰 영역을 차지하는 LCP 요소였고, 로딩 지연으로 초기 화면이 비어 보이는 시간이 길어져 Slow 4G 환경 기준 LCP가 4.69s까지 증가하는 등 첫 방문 품질이 특히 나빠졌습니다.",
                     ],
                     investigation: [
                         "원인을 좁히기 위해 Chrome DevTools의 Performance, Network, Lighthouse를 병행해 측정했습니다.",
                         "JPEG 기준 약 76KB 용량에 네트워크 다운로드만 약 2.45s가 소요되는 구간이 있었고, 전송 데이터 크기 자체가 병목임이 드러났습니다.",
                         "동시에 LCP 후보 이미지에 대해 리소스 요청 시작이 늦고, 우선순위가 상대적으로 낮게 잡히는 Resource Load Delay도 함께 관찰되었습니다.",
                         "캐시가 채워진 Warm 상태에서는 체감이 나아보여도, Cold Start에서는 동일 구조가 반복적으로 성능 저하를 만들었습니다.",
-                        "결국, 문제의 본질은 서버 응답 속도가 아니라 전송 데이터 크기와 요청 타이밍의 결합으로 재정의했습니다.",
-                        "이에 따라 단순 서버 튜닝이 아니라 이미지 전달 경로와 포맷·크기·선요청 전략을 함께 바꾸는 방향으로 Solution을 설계했습니다.",
+                        "결국, 문제의 본질은 서버 응답 속도가 아니라 전송 데이터 크기와 요청 타이밍의 결합으로 재정의했고, 이미지 전달 경로와 포맷·크기·선요청 전략을 함께 바꾸는 방향으로 Solution을 설계했습니다.",
+                        "또 기존 구조에서는 검색 결과 카드 리스트에서 링크를 클릭하여 이미지를 렌더링하는 상세 페이지에 진입한 뒤(네비게이션 직후)에야 이미지 다운로드가 본격화되는 방식이었기에, 이를 해결하기 위해 '전환 전에' 같은 이미지에 대한 네트워크를 미리 요청하는 방향을 검토했습니다.",
                     ],
                     solution: [
-                        "구조적 병목을 줄이기 위해 이미지 경로를 분리했습니다. 책 표지 등 가벼운 기존 리소스는 Supabase URL을 유지하고, 위치 지도처럼 대용량이자 LCP에 영향이 큰 이미지는 ImageKit 경로로 변경했습니다.",
-                        "ImageKit 경로에는 next/image 커스텀 로더가 `tr=w-{width},q-{quality},f-auto`를 부여하도록 구성해 포맷 자동 선택과 폭 기반 리사이징을 동시에 적용했습니다.",
-                        "풀 페이지(`/location/[id]`)에서는 상단 표지에 `priority`를 두고 지도는 `fill + sizes + 종횡비 래퍼`로 요청 폭만 최적화했습니다. 반대로 인터셉트 모달에서는 지도가 메인 컨텐츠로써 화면 대부분을 차지하므로 지도에 `priority`를 적용했습니다.",
-                        "물론 이미지 최적화 방식에 대해 Next.js Image Optimization(내장 변환), Cloudflare Images(별도 변환/캐시 파이프라인)도 함께 검토했습니다.",
-                        "하지만 Next.js 내장은 변환이 서버에서 발생하므로 트래픽 증가 시 비용과 부하가 커질 수 있고, Cloudflare Images는 운영 관점에서 추가 파이프라인 구성이 필요했습니다.",
+                        "개선 방식으로는 Next.js 내장 Image Optimization, Cloudflare Images, ImageKit을 비교했고, ImageKit을 선택했습니다.",
+                        "Next.js 내장만으로는 변환이 서버에서 발생하므로 트래픽 증가 시 비용과 부하가 커질 수 있고, Cloudflare Images는 운영 관점에서 추가 파이프라인 구성이 필요했습니다.",
                         '반면 ImageKit은 URL 파라미터 기반 실시간 변환과 글로벌 Edge 캐싱을 제공하고, 기존 Storage(Supabase)와의 연동이 비교적 단순해 "변환 + 캐싱 + 전달"을 한 경로에서 처리할 수 있어 선택했습니다.',
+                        "구조적 병목을 줄이기 위해 이미지 경로를 분리했습니다. 책 표지 등 가벼운 기존 리소스는 Supabase URL을 유지하고, 위치 지도처럼 대용량이자 LCP에 영향이 큰 이미지는 ImageKit 경로로 변경했습니다.",
+                        "CDN 기반 ImageKit 경로에는 next/image 커스텀 로더가 `tr=w-{width},q-{quality},f-auto`를 부여하도록 구성해 포맷 자동 선택과 폭 기반 리사이징을 동시에 적용했습니다.",
+                        "또한 페이지 별 렌더링 우선순위를 다르게 했습니다. 풀 페이지(`/location/[id]`)에서는 상단 표지에 `priority`를 두고, 반대로 인터셉트 모달에서는 지도가 메인 컨텐츠로써 화면 대부분을 차지하므로 지도에 `priority`를 적용했습니다.",
+                        "이렇게 전달 경로와 포맷을 정리한 뒤에도, 아직 검색 카드→위치 상세(모달) 시나리오에서는 전환 직후에야 지도 바이트가 크게 움직이면 LCP가 늦게 잡히는 체감이 남았습니다.",
+                        "이를 해결하기 위해 사용자가 아직 상세 화면에 없을 때부터 그 화면에서 LCP가 될 지도 이미지에 대한 요청을 미리 시작하여, 클릭 이후 LCP 타임라인에서 다운로드가 끝나 있거나 훨씬 앞서가게 만들기로 했습니다.",
+                        "`ToLocationButton`에서는 데스크톱에서 포인터가 링크 위에 올라올 때(`onMouseEnter`) 선요청을 걸고, 모바일 등에서는 호버가 없을 수 있어 같은 핸들러를 `onPointerDown`에도 연결해 탭 직전에도 네트워크를 열 수 있게 했습니다.",
+                        "url을 결정할 때는 상세에서 실제로 그려지는 변환 URL과 동일한 규칙으로 주소를 만들기 위해 `getLocationMapPreloadUrl`(내부적으로 로더와 같은 `w,q,tr` 조합)을 사용했습니다.",
                         "이러한 설계를 구조 관점에서 보면 다음과 같은 흐름으로 정리할 수 있습니다.",
                     ],
                     solutionCode: {
                         caption:
-                            "next/image 커스텀 로더로 ImageKit 변환 파라미터를 일관 적용",
+                            "상세에서 실제로 요청되는 ImageKit 변환 URL을 로더에서 일관 생성(`buildImageKitUrl` + 기본 로더)",
                         codeLanguage: "typescript",
                         codeSnippet: `// imageKitLoader.ts (발췌)
 import type { ImageLoaderProps } from "next/image";
 
 const IK_HOST = "ik.imagekit.io";
 
+export function buildImageKitUrl(
+  src: string,
+  width: number,
+  quality = 75
+): string {
+  if (src.startsWith("/")) return src;
+  try {
+    const url = new URL(src);
+    if (url.hostname === IK_HOST) {
+      url.searchParams.set("tr", \`w-\${width},q-\${quality},f-auto\`);
+      return url.toString();
+    }
+  } catch {}
+  return src;
+}
+
 export default function imageKitLoader({
   src,
   width,
   quality,
 }: ImageLoaderProps): string {
-  const q = quality ?? 75;
-  if (src.startsWith("/")) return src;
-
-  try {
-    const url = new URL(src);
-    if (url.hostname === IK_HOST) {
-      url.searchParams.set("tr", \`w-\${width},q-\${q},f-auto\`);
-      return url.toString();
-    }
-  } catch {}
-
-  return src;
+  return buildImageKitUrl(src, width, quality ?? 75);
 }`,
                     },
                     architectureIntro: [
                         "기존에는 브라우저 요청이 Next.js 서버를 거쳐 `public` 정적 이미지를 직접 내려받는 단일 경로였습니다.",
                         "개선 이후에는 브라우저가 Next.js로부터 HTML을 받고, 위치 지도는 ImageKit Edge(변환·캐시), 책 표지는 Supabase Origin으로 각각 직접 요청하는 이중 경로로 분리했습니다.",
                         "CDN 경로를 바꾸는 옵션이 아니라 preload 힌트로 요청 시점을 앞당기는 역할인 `priority`를 적용해, 전달 경로(어디서 받는가)와 요청 시점(언제 받는가)을 분리 제어할 수 있도록 하여 Cold Start 편차와 LCP 지연을 함께 줄입니다.",
+                        "검색 카드에서 호버 또는 포인터 다운 시 아직 상세 라우트로 가기 전에 지도(LCP 후보)에 대한 네트워크를 시작해, 클릭·터치 이후 타임라인에서 이미지가 늦게 붙는 구간을 줄입니다.",
                     ],
                     diagram: {
                         before: `flowchart LR
@@ -697,46 +698,34 @@ Browser --> Supabase["Supabase Storage Origin (Book Cover)"]`,
                             "next.config에서 `images.loaderFile`과 `remotePatterns`를 설정해 ImageKit·Supabase 호스트를 명시적으로 허용하고, 로더 규칙을 전역에서 일관 적용했습니다.",
                             "위치 지도 URL은 `getLocationImageSrc`로 ImageKit 엔드포인트를 사용하고, `LOCATION_MAP_IMAGE_SIZES` 상수와 `fill`을 결합해 실제 레이아웃 폭에 맞는 요청만 내려가도록 조정했습니다.",
                             "풀 페이지에서는 상단 표지(`getImageSrc`)에 `priority`를 두고 지도는 non-priority로 운영했으며, 모달 라우트에서는 지도에 `priority`를 적용해 화면 점유율에 맞게 우선순위를 분기했습니다.",
-                            "핵심은 ‘어디서 파일을 두느냐’보다 ‘어떤 포맷·크기·시점으로 전달하느냐’에 두고, 측정 가능한 지표로 Before/After를 맞춰 검증했습니다.",
+                            "`ToLocationButton`에서 `getLocationMapPreloadUrl`로 변환 URL을 잡아 `new Image()`로 선요청하며, `onMouseEnter`뿐 아니라 모바일을 고려해 `onPointerDown`에도 동일 핸들러를 연결했습니다. 목표는 전환 전에 바이트 전송을 시작해 LCP가 측정되는 순간까지의 대기를 줄이는 것입니다.",
+                            "1·2단계 모두 ‘어디서 파일을 두느냐’보다 ‘어떤 포맷·크기·언제 요청을 열 것인가’에 두고, 각각 측정 맥락에 맞는 지표로 검증했습니다.",
                         ],
                         codeLanguage: "tsx",
-                        codeSnippet: `// app/location/[id]/page.tsx (발췌)
-<div className="relative sm:w-24 sm:h-36 w-16 h-24 self-center">
-  <Image
-    src={getImageSrc(bookInfo.location, bookInfo.id)}
-    alt={bookInfo.title}
-    fill
-    sizes="(min-width: 640px) 6rem, 4rem"
-    className="object-cover rounded-lg"
-    quality={80}
-    priority
-  />
-</div>
+                        codeSnippet: `// ToLocationButton.tsx (발췌) — 상세 진입 전 LCP 이미지 요청 시작
+const preloadLocationMap = () => {
+  const img = new Image();
+  img.src = getLocationMapPreloadUrl(
+    location,
+    window.innerWidth,
+    window.devicePixelRatio
+  );
+};
+// 데스크톱: 호버 / 모바일·터치: 다운 시점에도 선요청
+onMouseEnter={preloadLocationMap}
+onPointerDown={preloadLocationMap}
 
-<div
-  className="relative mt-4 w-full"
-  style={{ aspectRatio: \`\${LOCATION_IMAGE_SIZE.width} / \${LOCATION_IMAGE_SIZE.height}\` }}
->
-  <Image
-    src={getLocationImageSrc(bookInfo.location)}
-    alt={bookInfo.title + "이 있는 책장"}
-    fill
-    sizes={LOCATION_MAP_IMAGE_SIZES}
-    className="object-contain"
-  />
-</div>`,
+// app/location/[id]/page.tsx (발췌)
+<Image
+  src={getLocationImageSrc(bookInfo.location)}
+  alt={bookInfo.title + "이 있는 책장"}
+  fill
+  sizes={LOCATION_MAP_IMAGE_SIZES}
+  className="object-contain"
+/>`,
                     },
                     impact: {
                         metrics: [
-                            {
-                                label: "LCP (Cold, Slow 4G)",
-                                value: "4.69s → 2.81s",
-                                description: [
-                                    "약 40% 단축",
-                                    "WebP 변환·리사이징으로 전송 데이터 크기를 줄여 다운로드 시간을 단축",
-                                    "`priority/preload`로 요청 시작 시점을 앞당겨 Resource Load Delay를 낮춤",
-                                ],
-                            },
                             {
                                 label: "이미지 전송 용량",
                                 value: "76KB → 26KB",
@@ -750,7 +739,7 @@ Browser --> Supabase["Supabase Storage Origin (Book Cover)"]`,
                                 label: "이미지 다운로드 시간",
                                 value: "2.45s → 1.58s",
                                 description: [
-                                    "약 35% 단축 (Slow 4G)",
+                                    "약 35% 단축",
                                     "WebP·리사이징으로 용량을 축소해 전송/다운로드 병목을 제거",
                                 ],
                             },
@@ -762,12 +751,20 @@ Browser --> Supabase["Supabase Storage Origin (Book Cover)"]`,
                                     "사용자 경험 편차 감소",
                                 ],
                             },
+                            {
+                                label: "LCP (1단계, Cold·Slow 4G)",
+                                value: "4.69s → 2.81s",
+                                description: ["약 40% 단축", "Cold 기준"],
+                            },
+                            {
+                                label: "LCP (2단계, preload)",
+                                value: "~5.8s → ~4.3s",
+                                description: ["약 25% 단축"],
+                            },
                         ],
                         summary: [
-                            "책 표지와 위치 지도의 전달 경로를 분리하고, 지도에는 ImageKit 로더(`f-auto`·폭 기반 `tr`)를 적용해 자산별 전송 전략을 명확히 했습니다.",
-                            "전송 데이터 축소(WebP·리사이징)로 다운로드 비용을 줄이고, `priority` 선요청으로 Resource Load Delay를 낮춰 Cold 기준 LCP를 4.69s에서 2.81s로 개선했습니다. CDN은 최적화된 이미지를 사용자와 가까운 Edge에서 빠르게 전달하는 역할을 담당했습니다.",
-                            "Warm에서만 체감이 나던 한계를 넘어, 첫 방문에서도 핵심 이미지가 빠르게 보이도록 사용자 경험 편차를 줄였습니다.",
-                            "결과적으로 측정된 병목(크기·시점)을 코드 레벨 규칙(로더·sizes·priority)으로 연결해 검증한 성능 개선 사례로 정리할 수 있었습니다.",
+                            "1단계에서는 책 표지와 위치 지도의 전달 경로를 분리하고, ImageKit·`next/image`의 `priority`·`sizes`로 전송 바이트와 첫 화면 요청 시점을 줄였습니다. CDN은 최적화된 이미지를 Edge에서 전달하는 역할을 담당했습니다.",
+                            "2단계에서는 상세·모달로 넘어가기 전에 LCP가 될 지도 이미지에 대한 요청을 열고, 데스크톱은 `onMouseEnter`, 터치 환경은 `onPointerDown`으로 같은 선제 로딩을 두어 클릭 이후 LCP 타임라인에서 다운로드가 뒤늦게 붙는 구간을 줄이는 데 초점을 맞췄습니다.",
                         ],
                     },
                 },
