@@ -530,11 +530,6 @@ export const editScenarioFormSchema = baseScenarioFormSchema;`,
                     },
                 },
             },
-            {
-                title: "Challenge placeholder 3",
-                summary: "Challenge summary placeholder 3",
-                caseStudy: placeholderCaseStudy,
-            },
         ],
     },
     {
@@ -543,11 +538,24 @@ export const editScenarioFormSchema = baseScenarioFormSchema;`,
         teamSize: "개인 프로젝트 (100%)",
         description:
             '"다른 사람은 읽을 수 있지만, 업로드는 나만 가능한" 콘셉트의 기술 블로그로, 해시태그 기반 분류·검색을 직접 구현해 내가 쓴 글을 위키처럼 빠르게 다시 찾을 수 있도록 설계한 서비스입니다.',
-        images: [],
+        images: [
+            "/images/projects/myblog/home.png",
+            "/images/projects/myblog/posts.png",
+            "/images/projects/myblog/search.png",
+            "/images/projects/myblog/profile.png",
+            "/images/projects/myblog/create.png",
+        ],
         features: [
-            "Feature placeholder 1",
-            "Feature placeholder 2",
-            "Feature placeholder 3",
+            "글 목록(`/posts`)·검색(`/search`)에서 `q`·`sort`·`tag`(복수 해시태그 id)를 URLSearchParams로 동기화해 새로고침·공유·뒤로가기 시 동일 필터·정렬 상태를 재현했습니다.",
+            "Supabase RPC·인덱스 기반으로 다중 해시태그 AND 조건과 정렬(최신/인기/좋아요/오래된 순)을 조합한 목록·검색 API를 사용하고, 클라이언트는 TanStack Query `useInfiniteQuery`와 Intersection Observer로 무한 스크롤을 구성했습니다.",
+            "서버에서 `prefetchInfiniteQuery` → `dehydrate` → `HydrationBoundary`로 첫 페이지를 시드하고, `lib/queries.ts`의 queryKey 팩토리로 서버 prefetch와 클라이언트 `useInfiniteQuery·무효화`가 같은 키를 쓰도록 맞췄습니다(검색은 필터가 있을 때만 prefetch, `initialData` 없음).",
+            "정적 읽기 위주에 맞게 글 목록의 주기적 폴링(`refetchInterval`)을 제거하고 `refetchOnWindowFocus: false` 등으로 클라이언트 refetch 부담을 줄였습니다.",
+            "Next.js `unstable_cache`와 태그(`revalidateTag`)로 홈·글 상세·해시태그·댓글 등 읽기 스냅샷을 Data Cache에 두고, 변경 시 태그 단위로 무효화했습니다. 좋아요처럼 사용자별 데이터는 세션 기반 조회로 분리하고 `useQuery` + 낙관적 업데이트·`refetchOnWindowFocus`로 탭 복귀 시 동기화했습니다.",
+            "글·댓글·좋아요·이미지 업로드 등을 Server Actions로 모으고 Zod로 입력을 검증한 뒤 Supabase(PostgreSQL, Storage, RPC)를 호출하는 구조로 유지했습니다.",
+            "마크다운 뷰어에서 `next/image`·GFM·구문 강조·Mermaid를 커스텀 컴포넌트로 묶어 렌더 품질과 잘못된 HTML 중첩·hydration 리스크를 줄이는 방향으로 구성했습니다.",
+            "Supabase OAuth와 Next.js Middleware로 `/admin`·`/profile` 등 보호 라우트를 두고, 관리자 권한에 따라 UI와 서버 로직을 함께 제한했습니다.",
+            "`generateMetadata`로 글·목록·검색·해시태그 맥락별 메타·OG를 동적으로 구성하고 `sitemap.xml`·`robots.txt`로 크롤링 경로를 정리했습니다.",
+            "검색 결과 구역은 `Suspense`와 Skeleton fallback으로 전환 시 빈 화면과 레이아웃 점프를 줄였습니다.",
         ],
         techStack: [
             "Next.js 15",
@@ -564,9 +572,143 @@ export const editScenarioFormSchema = baseScenarioFormSchema;`,
         githubUrl: "https://github.com/kimyoungyin/myblog",
         challenges: [
             {
-                title: "Challenge placeholder 1",
-                summary: "Challenge summary placeholder 1",
-                caseStudy: placeholderCaseStudy,
+                title: "읽기 경로의 중복 요청을 제거하기 위한 Next.js Data Cache와 TanStack Query 기반 캐시 계층 재설계",
+                summary:
+                    "읽기 경로가 요청마다 DB에 직접 붙고, 클라이언트에서도 불필요한 refetch가 반복되는 구조를 개선했습니다. Next.js Data Cache와 TanStack Query SSR Hydration을 정렬해 서버·클라이언트 캐시 계층을 분리하고, 중복 요청을 제거해 동일 데이터 재요청 시 DB 접근을 줄이는 구조로 변경했습니다.",
+                caseStudy: {
+                    problem: [
+                        "읽기 데이터가 요청마다 Supabase에 직접 조회되는 구조로, 동일 요청에서도 DB 접근이 반복되는 비효율이 있었습니다.",
+                        "또한 Next.js Data Cache를 활용한 요청 간 스냅샷 공유가 없어 서버 캐시 계층이 사실상 부재한 상태였습니다.",
+                        "클라이언트 측에서도 무한 스크롤 기반으로 동작하는 `/posts`와 `/search`의 데이터 패칭 방식이 달라 SSR Hydration 계약이 일관되지 않았고, 일부 경로에서는 불필요한 refetch가 발생했습니다.",
+                        "특히 글 목록에는 주기적 polling이 설정되어 있어, 갱신 빈도가 낮은 정적 콘텐츠(블로그)임에도 지속적인 백그라운드 요청이 발생했습니다.",
+                    ],
+                    investigation: [
+                        "문제를 단순 증상이 아닌, 읽기 부하 / 캐시 무효화 단위 / 클라이언트 데이터 흐름의 세 축으로 재정의했습니다.",
+                        "시나리오 1(상세): 동일 `postId`를 반복 방문할 때마다 서버가 DB 조회를 다시 수행하는 구조로, 캐시가 없는 상태에서는 동일 데이터에 대한 불필요한 쿼리가 반복되었습니다.",
+                        "시나리오 2(목록·검색): 서버에서 내려주는 초기 데이터와 클라이언트의 `queryKey`, fetch 시점이 일치하지 않아, 화면은 동일하게 보이지만 내부적으로는 중복 요청과 캐시 미스가 발생하는 구조였습니다.",
+                        "또한 일부 목록에서는 주기적 refetch가 설정되어 있어, 실제로 변경이 거의 없는 데이터에도 지속적인 네트워크 요청이 발생하고 있었습니다.",
+                        "이러한 구조는 현재 트래픽이 낮은 환경에서는 큰 문제가 되지 않지만, 기능이 확장되거나 사용자 행동이 늘어날 경우 불필요한 DB 접근과 네트워크 비용이 빠르게 증가할 수 있는 상태라고 판단했습니다.",
+                        "결국 문제의 본질이 '데이터가 아니라 요청 흐름'에 있다고 판단했습니다. 이를 해결하기 위해, 서버와 클라이언트 캐시 계층을 분리하고, 중복 요청을 제거하는 방향으로 설계했습니다.",
+                    ],
+                    solution: [
+                        "1) 서버 캐시 계층 도입",
+                        "읽기 요청이 매번 DB로 향하는 구조를 해결하기 위해, Next.js Data Cache를 서버 캐시 계층으로 도입했습니다.",
+                        "클라이언트 TanStack Query 캐시만으로는 HTTP 요청 단위를 넘어 서버에서 조회한 결과를 공유할 수 없어, 여러 요청에서 동일 읽기가 반복될 구조를 줄이기 위해 Next Data Cache를 서버 측 스냅샷 계층으로 별도 두었습니다.",
+                        "공용 읽기는 `unstable_cache`로 감싸고, 변경 시 범위를 쪼개 무효화할 수 있도록 태그 기반으로 설계했습니다. 무효화 최소 단위를 태그로 나눠 전 라우트만 일괄 갱신하는 방식이 되지 않게 했습니다.",
+                        "이후 무효화는 태그 기반으로 제어하고, TTL은 보조적 안정장치로 사용하는 전략을 선택했습니다.",
+                        "2) 개인화 데이터 분리",
+                        "모든 데이터를 캐싱하지 않고, 사용자별 상태가 필요한 좋아요 여부는 Data Cache에서 제외했습니다.",
+                        "공용 데이터는 서버 캐시로 처리하고, 사용자 의존 데이터는 Server Action과 클라이언트 TanStack Query로 분리해 캐시 키 폭발을 방지하고 데이터 일관성을 유지했습니다.",
+                        "3) SSR Hydration 계약 통일",
+                        "목록(`/posts`)과 검색(`/search`)의 패칭·시드 방식이 달라, 화면은 같아 보여도 중복 요청과 캐시 미스가 생겼습니다.",
+                        "단일 SSR prefetch·hydrate 계약으로 정렬해 서버와 클라이언트가 같은 TanStack 캐시 슬롯을 바라보도록 통일했습니다.",
+                        "4) 불필요한 클라이언트 요청 제거",
+                        "블로그는 갱신 빈도가 낮고 실시간성이 필수는 아니어서 목록의 주기적 polling을 제거했습니다. 실시간 대시보드형 UI라면 polling이 의미 있을 수 있으나, 이 서비스는 정적 읽기에 가깝다고 보았습니다.",
+                        "변경이 생기면 태그 무효화를 중심으로 서버 스냅샷을 갱신하고, 필요할 때만 명시적 동기화로 클라이언트를 맞추는 방향으로 두었습니다.",
+                        "5) 캐시 정책 설계(trade-off)",
+                        "조회수는 실시간 정합성이 중요하지 않다고 판단해 캐시된 값을 사용하고, DB는 별도로 증가시키는 방식으로 읽기 성능을 우선시했습니다.",
+                        "반대로 좋아요는 사용자 상태에 따라 달라지므로 캐시하지 않고, 클라이언트에서 refetch 및 낙관적 업데이트로 일관성을 유지했습니다.",
+                        "결과적으로, 캐싱의 목적을 단순 성능 개선이 아니라, 요청 흐름 자체를 줄이는 구조적 문제 해결로 정의했습니다.",
+                    ],
+                    solutionCode: {
+                        caption:
+                            "읽기 스냅샷을 Data Cache에 두고 태그로 무효화 범위를 제어하는 `unstable_cache` 패턴. 캐시 키 `['post', id]`는 `id`와 정합적이고, 호출 시 래퍼를 구성한 뒤 즉시 실행(`()`)하면 Next가 해당 키로 스냅샷을 재사용한다(팩토리로 분리해 재사용할 수도 있으나 예시는 직관용).",
+                        codeSnippet: `// src/lib/posts.ts (발췌)
+import { unstable_cache } from "next/cache";
+
+export async function getCachedPost(id: string) {
+  // 동일 id면 ["post", id] 키로 스냅샷 재사용 → 히트 시 아래 콜백 미실행
+  return unstable_cache(
+    async () => fetchPostFromSupabase(id),
+    ["post", id],
+    {
+      tags: [\`post-\${id}\`, "posts"],
+      revalidate: 3600,
+    }
+  )();
+}`,
+                    },
+                    architectureIntro: [
+                        "RSC와 읽기 액션은 먼저 `unstable_cache`로 Next Data Cache를 조회하고, 히트면 콜백 내 DB 조회 없이 스냅샷을 씁니다. 미스·태그 무효화·TTL 만료 시에만 Supabase를 채웁니다.",
+                        "글 목록·검색은 요청 단위 서버 `QueryClient`에 `prefetchInfiniteQuery`로 넣은 뒤 dehydrate → `HydrationBoundary`로 브라우저 TanStack 캐시를 시드하고, 이후 같은 `queryKey`면 메모리 히트로 네트워크를 생략할 수 있습니다.",
+                        "Mutation은 `revalidateTag`로 Data Cache 엔트리를 무효화합니다. 브라우저 TanStack 상태는 서버 무효화만으로는 비워지지 않으므로 필요 시 `invalidateQueries` 등으로 맞춥니다.",
+                        "좋아요는 사용자별 캐시 폭발을 피하기 위해 Data Cache 밖에서 두고, 조회수는 스냅샷과 DB 증분 사이에 의도된 지연을 허용합니다.",
+                        "브라우저 TanStack은 세션·탭 생명주기 안의 메모리 캐시에 가깝고, Next Data Cache는 서버에서 요청 간 공유되는 읽기 스냅샷이라, 두 계층을 분리해 요청 내부 최적화와 요청 간 최적화를 동시에 노렸습니다.",
+                    ],
+                    diagram: {
+                        before: `flowchart LR
+RSC[Server_RSC] --> DB[(Supabase)]
+RSC --> RevPath[revalidatePath]
+Posts[posts_infinite_query] --> TanStack[TanStack_client]
+Search[search_initialData] --> TanStack
+Posts -.->|SSR_contract_drift| Search
+Posts --> Poll[periodic_refetch]`,
+                        after: `flowchart TB
+RSC[RSC_read] --> DC[Next_Data_Cache]
+DC -->|hit| RSC
+DC -->|miss_or_invalidated| DB[(Supabase)]
+RSC --> Prefetch[prefetchInfiniteQuery]
+Prefetch --> QC[QueryClient_server]
+QC --> Hydration[dehydrate_HydrationBoundary]
+Hydration --> TanStack[TanStack_client]`,
+                    },
+                    implementation: {
+                        description: [
+                            "구현에서 가장 까다로운 부분은 Data Cache 키·무효화 태그·TanStack `queryKey`가 어긋나면 같은 데이터인데도 한쪽은 히트·한쪽은 미스가 나는 점이었습니다.",
+                            "`queryKey`를 객체 형태로 통일하고, 서버 `prefetchInfiniteQuery`와 클라이언트 `useInfiniteQuery`가 동일 키를 쓰도록 맞췄습니다.",
+                            "태그와 캐시 키를 분산 관리하면 무효화 누락이나 불일치가 발생할 수 있기 때문에, `cache-tags.ts`에 `posts`·`hashtags`·`comments`의 `unstable_cache` 래퍼에서 사용될 태그 문자열과 캐시 키 배열의 대응을 한곳에서 정리했습니다.",
+                            "`/search`는 `initialData` 중심, `/posts`는 prefetch 중심이라 hydration 이후 중복 요청이 났습니다. 검색 경로에서 `initialData`를 제거하고 `prefetchInfiniteQuery` → `dehydrate` → `HydrationBoundary`로 목록과 같은 계약으로 바꿨습니다(`search/page.tsx`, `SearchResultsWrapper.tsx`). 필터가 있을 때만 쿼리를 켜고(`enabled`), 총계는 첫 페이지 메타에서 읽습니다.",
+                            "polling 제거 뒤 stale 가능성은 mutation 직후 `revalidateTag`로 Data Cache를 무효화하고, 필요 시 `invalidateQueries`로 클라이언트 메모리를 비우는 연결로 보완했습니다(`actions.ts`). 정적 읽기에 맞게 `refetchOnWindowFocus` 등은 `PostWrapper.tsx`에서 정리했습니다.",
+                            "좋아요는 사용자별이라 Data Cache에 넣으면 키 폭발이 날 수 있으므로 클라이언트 측 `useQuery`로 분리했고, 공용 글 스냅샷과 섞이지 않도록 별도 fetch·낙관적 업데이트로 hydration 경계를 넘겼습니다.",
+                            "파일 앵커: `page.tsx`·`posts/[id]/page.tsx`는 캐시된 읽기를 RSC에서 호출하고, `actions.ts`는 글·댓글·좋아요 뒤 `revalidateTag`를 묶습니다.",
+                        ],
+                        codeLanguage: "tsx",
+                        codeSnippet: `// SearchResultsWrapper.tsx (발췌)
+const hasFilters = Boolean(q?.trim() || tag);
+
+const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+  useInfiniteQuery({
+    queryKey: ["search", { q, tag }],
+    queryFn: ({ pageParam }) =>
+      fetchSearchPosts({ q, tag, cursor: pageParam }),
+    getNextPageParam: (last) => last.nextCursor,
+    initialPageParam: null as string | null,
+    enabled: hasFilters,
+  });
+
+const total = data?.pages[0]?.total ?? 0;`,
+                    },
+                    impact: {
+                        metrics: [
+                            {
+                                label: "DB Read 감소",
+                                value: "재방문 시 DB 접근 제거",
+                                description: ["요청마다 DB 접근 -> Cache"],
+                            },
+                            {
+                                label: "중복 요청 제거",
+                                value: "초기 렌더링 중복 fetch 정리",
+                                description: [
+                                    "SSR `prefetch`와 클라이언트 `queryKey` 불일치 -> dehydrate/hydrate 계약을 통일",
+                                ],
+                            },
+                            {
+                                label: "무효화",
+                                value: "태그 단위",
+                                description: [
+                                    "mutation 후 `revalidateTag`로 글·댓글·해시태그 스코프만 선택 무효화",
+                                ],
+                            },
+                        ],
+                        summary: [
+                            "핵심은 ‘응답 한 줄이 얼마나 빨라졌나’만이 아니라, 읽기가 DB에 매번 붙고 검색·목록 계약이 엇갈리며 폴링이 돌던 구조를 캐시 계층 + 단일 SSR 계약 + 클라이언트 정책으로 재정의한 점입니다.",
+                            "Document TTFB는 동일 조건에서 전후 차이가 크지 않았고, 이는 SSR·네트워크 쪽 영향이 상대적으로 커서라고 보았습니다. 그래서 효과 해석의 중심을 DB 접근 제거와 중복 요청 제거로 옮겼습니다.",
+                            "Data Cache 도입 이후 동일 데이터 재요청 시 DB 없이 스냅샷으로 응답할 수 있는 경로가 생겼고, 서버 로그·DB 쿼리 로그로 히트·미스를 구분해 검증했습니다.",
+                            "TanStack Query는 dehydrate/hydrate와 `queryKey` 정렬로 서버 시드와 클라이언트 캐시를 맞춰 초기 렌더 단계의 불필요한 fetch를 줄였습니다.",
+                            "정적 콘텐츠에 맞지 않던 polling·과한 refetch를 정리했습니다.",
+                        ],
+                    },
+                },
             },
         ],
     },
