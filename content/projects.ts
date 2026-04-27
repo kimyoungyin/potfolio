@@ -68,7 +68,7 @@ export const projects: Project[] = [
             {
                 title: "인증 구조 고도화: Client-only에서 BFF 하이브리드로 전환",
                 summary:
-                    "클라이언트 분산 인증 구조에서 발생하던 동시성·쿠키·CORS 문제를 해결하기 위해, 인증 흐름을 서버 경계 중심으로 재설계했습니다.",
+                    "인증 갱신이 필요한 순간 여러 진입점이 동시에 요청을 보내 충돌했고, 보호 경로 접근 제어가 클라이언트 렌더 이후에 적용되어 비인증 사용자가 화면 깜빡임을 겪었습니다. 인증 흐름의 진입점을 서버 경계로 통합한 결과, 동시 401 N건에서 refresh가 항상 1회로 수렴하고 보호 경로 깜빡임이 0회가 되었습니다.",
                 caseStudy: {
                     problem: [
                         "기존 인증 구조는 브라우저에서 인증 상태를 직접 관리하는 Client-only 방식이었습니다.",
@@ -541,9 +541,9 @@ export const editScenarioFormSchema = baseScenarioFormSchema;`,
         githubUrl: "https://github.com/kimyoungyin/myblog",
         challenges: [
             {
-                title: "읽기 경로의 중복 요청을 제거하기 위한 Next.js Data Cache와 TanStack Query 기반 캐시 계층 재설계",
+                title: "캐시 히트 시 DB 쿼리 0건: 블로그 읽기 경로 캐시 계층 재정렬",
                 summary:
-                    "읽기 경로가 요청마다 DB에 직접 붙고, 클라이언트에서도 불필요한 refetch가 반복되는 구조를 개선했습니다. Next.js Data Cache와 TanStack Query SSR Hydration을 정렬해 서버·클라이언트 캐시 계층을 분리하고, 중복 요청을 제거해 동일 데이터 재요청 시 DB 접근을 줄이는 구조로 변경했습니다.",
+                    "읽기 비중이 극단적으로 높은 블로그에서, 동일 게시글 재방문 시에도 매번 DB를 조회하고 hydration 이후에도 클라이언트 중복 fetch가 발생하는 구조였습니다. mutation 이벤트 기반 태그 무효화와 클라이언트 hydration 계약 통일이라는 두 축으로 재정렬해, 캐시 히트 시 DB 쿼리 0건·백그라운드 불필요 요청 0건을 달성했습니다.",
                 caseStudy: {
                     problem: [
                         "블로그는 읽기 비중이 극단적으로 높고 콘텐츠 변경이 드문 서비스입니다. 그러나 서버 캐시 계층 없이 구성하면 동일 게시글을 반복 방문할 때도 요청마다 Supabase DB에 직접 접근하는 구조가 됩니다.",
@@ -704,9 +704,9 @@ const total = data?.pages[0]?.total ?? 0;`,
         githubUrl: "https://github.com/kimyoungyin/seongryung",
         challenges: [
             {
-                title: "CDN 기반 이미지 서빙 구조 개선 + 이미지 preload + DB 워터폴 제거로 LCP 최적화",
+                title: "LCP 4.69s → 2.81s: 캐시에 있어도 DB 응답을 기다리던 구조까지 해소한 과정",
                 summary:
-                    "메인 화면의 고해상도 책 위치 이미지가 LCP 요소로 늦게 그려지며 Slow 4G에서 LCP가 4.69s까지 지연되는 문제를, public 정적 서빙에서 Supabase Storage + ImageKit CDN로 옮겨 Cold 기준 LCP를 2.81s(약 40% 단축)까지 개선했습니다. 이어서 검색 카드→위치 상세 페이지 플로우에서는, 링크 `onMouseEnter`와 터치 환경을 고려한 `onPointerDown`에서 동일 선요청 로직을 실행해 네비게이션 이전에 이미지 요청을 미리 열었고, LCP 마커는 약 ~5.8s에서 ~4.3s로 상대 개선됐습니다. 마지막으로 모달 마운트 후 useEffect에서 Server Action을 호출해 location을 확정하던 DB 조회 워터폴을 제거해, 호버 preload와 맞물려 모달 전환 직후 이미지가 즉시 렌더링되도록 개선했습니다.",
+                    "첫 방문 시 Slow 4G 기준 LCP가 4.69s에 달했고, 이미지가 브라우저 캐시에 올라있어도 모달에서 DB 응답이 올 때까지 렌더를 기다리는 구조였습니다. 이미지 전달 경로·요청 시점·데이터 확정 흐름 세 가지를 재정렬해 Cold 기준 LCP를 2.81s(40% 단축)로 줄이고, 모달 전환 직후 skeleton 없이 이미지가 즉시 표시되도록 했습니다.",
                 caseStudy: {
                     problem: [
                         "사용자가 도서관 책을 검색한 뒤 위치를 확인하기까지의 흐름에서, 이미지 로딩이 세 지점에 걸쳐 사용자를 기다리게 만들었습니다.",
