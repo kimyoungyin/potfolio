@@ -42,6 +42,7 @@ export const projects: Project[] = [
             "FCM 알림 파이프라인을 포그라운드/백그라운드까지 통합하고 BroadcastChannel 멀티탭 동기화로 중복 처리를 방지했습니다.",
             "Vitest+MSW 테스트 인프라를 구축하고 통합/E2E 인증 전략을 문서화했으며, CI와 커밋 전 자동화(ESLint/Prettier/lint-staged/Husky)로 품질을 지속 검증했습니다.",
             "쿠키 보안 옵션과 프론트-백 DTO 형식 정합성을 문서/검증 기준으로 맞춰, 보안 이슈와 변경 비용을 함께 관리했습니다.",
+            "592줄 단일 훅에 집중되어 있던 폼 상태·검증·분기 로직을 RHF+Zod로 재설계해, 핵심 훅 코드 74%·조립 컴포넌트 77%를 줄이고 검증 규칙을 스키마 단일 선언으로 통일했습니다.",
         ],
         techStack: [
             "Next.js 15",
@@ -221,7 +222,7 @@ Interceptor --> Store`,
                     },
                 },
             },
-            {
+            /* {
                 title: "RHF + Zod 도입: 폼 아키텍처 리팩터링",
                 summary:
                     "폼 로직을 단일 훅에 몰아 넣은 구조가 유지보수·확장을 막고 있었고, 리렌더만이 아니라 ‘상태·검증·타입을 어느 층에 둘지’까지 재정의해 RHF+Zod로 책임을 나눴습니다. 핵심 훅 코드 74% 감소와 검증·조립 구조의 단일화를 달성했습니다.",
@@ -497,7 +498,7 @@ export const editScenarioFormSchema = baseScenarioFormSchema;`,
                         ],
                     },
                 },
-            },
+            }, */
         ],
     },
     {
