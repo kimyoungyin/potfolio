@@ -130,21 +130,11 @@ export function refreshViewer() {
 }`,
                     },
                     solution: [
-                        "1) 인증 책임의 서버 경계 이동",
-                        "동시성·쿠키·CORS 문제를 구조적으로 해결하기 위해, 인증 책임을 클라이언트에서 서버로 옮기는 것을 핵심 목표로 설계를 재구성했습니다.",
-                        "인증 API를 `/api/auth/*` Route Handler로 단일화하고, 클라이언트는 `authBffFetch`로만 인증 요청을 보내도록 변경했습니다.",
-                        "2) Route Handler와 쿠키 전달",
-                        "서버 경계에서 인증 상태를 일관되게 유지하기 위해 Route Handler는 `serverFetch(server-only)`로 백엔드를 호출하고, 성공 시 백엔드 Set-Cookie를 앱 도메인 기준으로 전달했습니다.",
-                        "3) Middleware 1차 분기",
-                        "진입 단계 제어를 위해 middleware에서 보호/게스트 경로를 1차 분기해 비인증 접근을 서버 단계에서 즉시 리다이렉트하고, 게스트 경로에서는 세션 refresh를 생략해 불필요한 검증을 줄였습니다.",
-                        "middleware는 인증 여부를 확정하지 않고 비인증 사용자 조기 차단을 위한 1차 필터 역할로만 두어, 클라이언트 진입 이전의 불필요한 네트워크 요청을 줄였습니다.",
-                        "4) 동시성 처리의 분리",
-                        "동시성 문제의 성격이 다르다고 판단해 401 재시도는 인터셉터 Queue로, 세션·인터셉터 간 중복 호출은 Singleton Promise로 나눠 처리했습니다.",
-                        "5) 서버 간 보조 검증",
-                        "Route Handler → Backend 호출 헤더에 x-internal-key를 포함하고 백엔드에서 검증하도록 했습니다. x-internal-key는 인증을 대체하는 수단이 아니라, 내부 경유 요청을 1차 식별하기 위한 보조 검증 계층입니다.",
-                        "6) 트레이드오프",
-                        "BFF 도입으로 서버 레이어가 추가되면서 초기 응답 경로는 길어졌지만, 인증 흐름의 일관성과 보안 제어 가능성을 확보하는 편이 장기적으로 더 중요하다고 판단했습니다.",
-                        "이러한 설계를 구조 관점에서 보면 다음과 같은 흐름으로 정리할 수 있습니다.",
+                        "브라우저가 직접 외부 인증 API를 호출하던 구조를 BFF로 전환했습니다. 모든 인증 요청은 same-origin /api/auth/* Route Handler를 경유하도록 하고, Route Handler 내부에서 serverFetch(server-only)로 백엔드를 호출했습니다. 클라이언트의 모든 인증 진입점(loginViewer, signupViewer, refreshViewer, logoutViewer)은 authBffFetch 단일 함수로 통일했습니다.",
+                        "쿠키 도메인 문제는 Route Handler가 백엔드 응답의 Set-Cookie를 앱 도메인 기준으로 변환해 전달하는 방식으로 해결했습니다. 브라우저는 자신이 외부 도메인을 호출하는지 알 수 없으며, 쿠키 전송 정책과 CORS 설정 부담이 서버 경계 안으로 흡수됩니다.",
+                        "미들웨어는 refreshToken 쿠키 유무만으로 보호/게스트 경로를 1차 분기해 비인증 접근을 서버 진입 단계에서 즉시 리다이렉트합니다. 인증 여부를 확정하지 않는 대신 조기 차단 역할만 담당해, 게스트 경로의 불필요한 refresh 호출과 클라이언트 렌더 후 깜빡임을 제거했습니다.",
+                        "동시성은 성격이 다른 두 경우를 분리해 처리했습니다. 여러 요청이 동시에 401을 받는 경우는 인터셉터 Queue로 직렬화하고, 세션 훅과 인터셉터가 동시에 refresh를 호출하는 경우는 refreshViewer Singleton Promise로 수렴시켜 refresh가 항상 1회만 실행되도록 보장했습니다.",
+                        "Route Handler → 백엔드 요청 헤더에 x-internal-key를 주입하고, 백엔드는 키 누락·불일치 시 즉시 차단합니다. 키는 환경변수로 관리하고 주기적으로 회전하며, 인증을 대체하는 수단이 아닌 내부 경유 요청의 1차 식별 계층으로만 사용됩니다.",
                     ],
                     solutionCode: {
                         caption:
@@ -162,13 +152,7 @@ if (res.status >= 200 && res.status < 300) {
 }
 return nextRes;`,
                     },
-                    architectureIntro: [
-                        "구조 변경의 핵심은 인증 흐름의 제어 시점을 클라이언트 이후에서 서버 진입 단계로 이동한 것입니다.",
-                        "Before 구조에서는 브라우저가 인증 API를 직접 호출하고, 인증 실패 이후 클라이언트에서 후차단하는 방식이었습니다. 이 구조는 인증 책임이 클라이언트에 분산되어 동시성·쿠키·CORS 문제를 함께 유발하는 한계가 있었습니다.",
-                        "즉, 인증 실패 이후 처리하던 구조를 인증 진입 단계에서 제어하는 구조로 전환했습니다.",
-                        "After에서는 인증 흐름을 서버 경계 중심으로 재구성해 브라우저는 same-origin BFF만 호출하고, middleware에서 1차 접근 제어, 인터셉터 + Singleton으로 동시성 제어, Route Handler와 백엔드 사이에는 x-internal-key 검증을 적용했습니다.",
-                        "이 구조는 인증 흐름을 서버 경계 중심으로 일관되게 통제할 수 있다는 점에서 기존 구조의 한계를 해소합니다.",
-                    ],
+                    architectureIntro: [],
                     diagram: {
                         before: `graph TD
 Client[Client]
@@ -201,24 +185,8 @@ Interceptor --> Store`,
                     },
                     implementation: {
                         description: [
-                            "설계 의도를 유지하면서 각 계층의 책임이 명확히 분리되도록 구현했습니다.",
-                            "클라이언트 인증 요청의 진입점을 단일화하기 위해 `loginViewer`, `signupViewer`, `refreshViewer`, `logoutViewer` 모두 `authBffFetch`를 사용하도록 통일했습니다.",
-                            "서버 경계에서 인증 흐름을 일관되게 제어하기 위해 BFF Route Handler는 `serverFetch`로 서버 환경변수 기반 API URL만 참조하고, 백엔드 응답의 Set-Cookie를 앱 응답에 전달했습니다.",
-                            "초기 접근 단계에서 불필요한 인증 요청을 줄이기 위해 middleware는 `refreshToken` 쿠키 유무만 기준으로 보호/게스트 라우트를 분기하고, matcher로 API 및 정적 리소스를 제외해 불필요한 실행을 방지했습니다.",
-                            "인터셉터 중복 등록으로 인한 부작용을 방지하기 위해 axios 인터셉터는 앱 초기 로드 시 1회만 등록되도록 제어했고, 큐 대기 후 refresh 완료 시 재시도되도록 구현했습니다.",
-                            "서버 간 신뢰 경계를 명시하기 위해 Route Handler -> Backend 요청 헤더에 x-internal-key를 주입했고, 백엔드는 키 불일치/누락 시 즉시 401 또는 403으로 차단하도록 구성했습니다.",
-                            "운영 관점에서는 키 유출 및 오용 가능성을 고려해 x-internal-key를 환경변수(비밀 저장소)로 관리하고 주기적으로 회전하며, 실패 로그 수집·누락 트래픽 모니터링 정책을 함께 문서화했습니다.",
-                            "이러한 구현을 통해 각 계층의 책임이 분리된 상태에서도 전체 인증 흐름이 일관되게 동작하도록 유지했습니다.",
+                            "각 계층의 책임이 명확히 분리된 상태에서도 전체 인증 흐름이 일관되게 동작하도록 구현했습니다.",
                         ],
-                        codeLanguage: "typescript",
-                        codeSnippet: `// 예시: Route Handler 내부 서버 간 검증 헤더 전달 (개념 코드)
-const res = await serverFetch("/auth/refresh", {
-  method: "POST",
-  headers: {
-    Cookie: backendCookie,
-    "x-internal-key": process.env.INTERNAL_API_KEY ?? "",
-  },
-});`,
                     },
                     impact: {
                         metrics: [

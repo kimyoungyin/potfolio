@@ -128,9 +128,10 @@ function ChallengeItem({
                     isExpanded
                         ? "grid-rows-[1fr] opacity-100"
                         : "grid-rows-[0fr] opacity-0",
+                    "print:grid-rows-[1fr] print:opacity-100",
                 )}
             >
-                <div className="overflow-hidden">
+                <div className="overflow-hidden print:overflow-visible">
                     <CaseStudyContent
                         caseStudy={challenge.caseStudy}
                         onScrollToTop={handleScrollToTop}
@@ -209,12 +210,14 @@ function CaseStudyCodeBlock({
 function CaseStudyParagraphs({
     paragraphs,
     className,
+    spacing = "space-y-3",
 }: {
     paragraphs: string[];
     className?: string;
+    spacing?: string;
 }) {
     return (
-        <div className="space-y-3">
+        <div className={spacing}>
             {paragraphs.map((text, i) => (
                 <p
                     key={i}
@@ -240,6 +243,7 @@ function CaseStudyContent({
     const timelineSteps = [
         {
             id: "problem",
+            paarLetter: "P",
             label: "Problem",
             icon: Lightbulb,
             color: "text-rose-500",
@@ -252,7 +256,8 @@ function CaseStudyContent({
         },
         {
             id: "investigation",
-            label: "Investigation",
+            paarLetter: "A",
+            label: "Analyze",
             icon: Search,
             color: "text-amber-500",
             bgColor: "bg-amber-500/10 dark:bg-amber-500/20",
@@ -264,12 +269,13 @@ function CaseStudyContent({
         },
         {
             id: "solution",
-            label: "Solution",
+            paarLetter: "A",
+            label: "Action",
             icon: Wrench,
-            color: "text-emerald-500",
-            bgColor: "bg-emerald-500/10 dark:bg-emerald-500/20",
-            borderColor: "border-emerald-500/30",
-            dotColor: "bg-emerald-500",
+            color: "text-blue-500",
+            bgColor: "bg-blue-500/10 dark:bg-blue-500/20",
+            borderColor: "border-blue-500/30",
+            dotColor: "bg-blue-500",
             content: caseStudy.solution,
             diagram: caseStudy.solutionDiagram,
             code: caseStudy.solutionCode,
@@ -277,10 +283,10 @@ function CaseStudyContent({
     ];
 
     return (
-        <div className="bg-muted/55 border-l-4 border-l-emerald-500/50">
+        <div className="bg-muted/55 border-l-4 border-l-blue-500/50 print:border-l-0 print:bg-transparent">
             <div className="px-6 py-8 lg:px-10 lg:py-10">
                 <div className="mx-auto max-w-4xl">
-                    {/* Case Study Header */}
+                    {/* PAAR Identity Bar */}
                     <div
                         className="mb-8 animate-fade-in"
                         style={{
@@ -288,57 +294,69 @@ function CaseStudyContent({
                             animationFillMode: "both",
                         }}
                     >
-                        <div className="inline-flex items-center gap-2 rounded-full bg-foreground/5 px-3 py-1 text-xs font-medium text-muted-foreground mb-3">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            Technical Deep Dive
+                        <div className="flex items-center gap-2 flex-wrap">
+                            {(
+                                [
+                                    { letter: "P", label: "Problem",  color: "text-rose-500",    bg: "bg-rose-500/10 dark:bg-rose-500/15",    border: "border-rose-500/25"    },
+                                    { letter: "A", label: "Analyze",  color: "text-amber-500",   bg: "bg-amber-500/10 dark:bg-amber-500/15",  border: "border-amber-500/25"   },
+                                    { letter: "A", label: "Action",   color: "text-blue-500",    bg: "bg-blue-500/10 dark:bg-blue-500/15",    border: "border-blue-500/25"    },
+                                    { letter: "R", label: "Result",   color: "text-emerald-500", bg: "bg-emerald-500/10 dark:bg-emerald-500/15", border: "border-emerald-500/25" },
+                                ] as const
+                            ).map((step, i, arr) => (
+                                <div key={step.letter + i} className="flex items-center gap-2">
+                                    <div className={cn(
+                                        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1",
+                                        step.bg, step.border,
+                                    )}>
+                                        <span className={cn("text-xs font-bold leading-none font-mono", step.color)}>
+                                            {step.letter}
+                                        </span>
+                                        <span className="text-xs font-medium text-muted-foreground">
+                                            {step.label}
+                                        </span>
+                                    </div>
+                                    {i < arr.length - 1 && (
+                                        <span className="text-muted-foreground/30 text-xs select-none">→</span>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Timeline Layout - Problem → Investigation → Solution */}
-                    <div className="relative mb-12">
-                        {/* Vertical timeline line */}
-                        <div className="absolute left-4 top-6 bottom-6 w-px bg-linear-to-b from-rose-500/50 via-amber-500/50 to-emerald-500/50 hidden sm:block" />
-
+                    {/* Timeline Layout - Problem → Analyze → Action */}
+                    <div className="mb-12">
                         <div className="flex flex-col gap-8">
                             {timelineSteps.map((step, index) => {
                                 const Icon = step.icon;
                                 return (
                                     <div
                                         key={step.id}
-                                        className="relative flex gap-6 animate-fade-up"
+                                        className="animate-fade-up"
                                         style={{
                                             animationDelay: `${100 + index * 100}ms`,
                                             animationFillMode: "both",
                                         }}
                                     >
-                                        {/* Timeline node */}
-                                        <div className="relative z-10 hidden sm:flex shrink-0">
-                                            <div
-                                                className={cn(
-                                                    "flex h-8 w-8 items-center justify-center rounded-full border-2 bg-card",
-                                                    step.borderColor,
-                                                )}
-                                            >
-                                                <div
-                                                    className={cn(
-                                                        "h-2.5 w-2.5 rounded-full",
-                                                        step.dotColor,
-                                                    )}
-                                                />
-                                            </div>
-                                        </div>
-
                                         {/* Content card */}
                                         <div
                                             className={cn(
-                                                "flex-1 rounded-xl border bg-card p-5 transition-all duration-300 hover:bg-card/70",
+                                                "rounded-xl border bg-card p-5 transition-all duration-300 hover:bg-card/70",
                                                 step.borderColor,
                                             )}
                                         >
-                                            <div className="flex items-center gap-3 mb-3">
+                                            <div className="flex items-center gap-3 mb-4">
                                                 <div
                                                     className={cn(
-                                                        "flex h-7 w-7 items-center justify-center rounded-lg",
+                                                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-bold text-sm font-mono",
+                                                        step.bgColor,
+                                                        step.color,
+                                                    )}
+                                                >
+                                                    {step.paarLetter}
+                                                </div>
+                                                <div
+                                                    className={cn(
+                                                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
                                                         step.bgColor,
                                                     )}
                                                 >
@@ -355,6 +373,11 @@ function CaseStudyContent({
                                             </div>
                                             <CaseStudyParagraphs
                                                 paragraphs={step.content}
+                                                spacing={
+                                                    step.id === "solution"
+                                                        ? "divide-y divide-border/30 [&>p]:py-3 [&>p:first-child]:pt-0 [&>p:last-child]:pb-0"
+                                                        : "space-y-3"
+                                                }
                                             />
                                             {step.code && (
                                                 <CaseStudyCodeBlock
@@ -369,86 +392,54 @@ function CaseStudyContent({
                                                     />
                                                 </div>
                                             )}
+                                            {step.id === "solution" && (
+                                                <>
+                                                    {caseStudy.diagram && (
+                                                        <div className="mt-6 pt-5 border-t border-border/40">
+                                                            <div className="flex items-center gap-2 mb-4">
+                                                                <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-500/10 dark:bg-blue-500/20">
+                                                                    <Network className="h-3 w-3 text-blue-500" />
+                                                                </div>
+                                                                <h6 className="text-sm font-semibold text-foreground">Architecture</h6>
+                                                            </div>
+                                                            {caseStudy.architectureIntro?.length ? (
+                                                                <div className="mb-4 space-y-2">
+                                                                    {caseStudy.architectureIntro.map((line, idx) => (
+                                                                        <p key={idx} className="text-base leading-relaxed text-muted-foreground">
+                                                                            {line}
+                                                                        </p>
+                                                                    ))}
+                                                                </div>
+                                                            ) : null}
+                                                            <DiagramComparison diagram={caseStudy.diagram} />
+                                                        </div>
+                                                    )}
+                                                    {(caseStudy.implementation.description.length > 1 || caseStudy.implementation.codeSnippet) && (
+                                                        <div className="mt-6 pt-5 border-t border-border/40">
+                                                            <div className="flex items-center gap-2 mb-4">
+                                                                <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-500/10 dark:bg-blue-500/20">
+                                                                    <Code2 className="h-3 w-3 text-blue-500" />
+                                                                </div>
+                                                                <h6 className="text-sm font-semibold text-foreground">Implementation</h6>
+                                                            </div>
+                                                            <CaseStudyParagraphs paragraphs={caseStudy.implementation.description} />
+                                                            {caseStudy.implementation.codeSnippet && (
+                                                                <CaseStudyCodeBlock
+                                                                    evidence={{
+                                                                        codeSnippet: caseStudy.implementation.codeSnippet,
+                                                                        codeLanguage: caseStudy.implementation.codeLanguage,
+                                                                    }}
+                                                                    className="mt-4"
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 );
                             })}
-                        </div>
-                    </div>
-
-                    {/* Architecture Diagram */}
-                    {caseStudy.diagram && (
-                        <div
-                            className="mb-12 animate-fade-up"
-                            style={{
-                                animationDelay: "400ms",
-                                animationFillMode: "both",
-                            }}
-                        >
-                            <div className="flex items-center gap-3 mb-5">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10 dark:bg-violet-500/20">
-                                    <Network className="h-4 w-4 text-violet-500" />
-                                </div>
-                                <h5 className="text-base font-semibold text-foreground">
-                                    Architecture
-                                </h5>
-                            </div>
-                            <div className="pl-0 sm:pl-11">
-                                {caseStudy.architectureIntro?.length ? (
-                                    <div className="mb-4 space-y-2">
-                                        {caseStudy.architectureIntro.map(
-                                            (line, index) => (
-                                                <p
-                                                    key={index}
-                                                    className="text-base leading-relaxed text-muted-foreground"
-                                                >
-                                                    {line}
-                                                </p>
-                                            ),
-                                        )}
-                                    </div>
-                                ) : null}
-                                <DiagramComparison
-                                    diagram={caseStudy.diagram}
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Implementation Section */}
-                    <div
-                        className="mb-12 animate-fade-up"
-                        style={{
-                            animationDelay: "500ms",
-                            animationFillMode: "both",
-                        }}
-                    >
-                        <div className="flex items-center gap-3 mb-5">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 dark:bg-blue-500/20">
-                                <Code2 className="h-4 w-4 text-blue-500" />
-                            </div>
-                            <h5 className="text-base font-semibold text-foreground">
-                                Implementation
-                            </h5>
-                        </div>
-                        <div className="flex flex-col gap-4 pl-0 sm:pl-11">
-                            <CaseStudyParagraphs
-                                paragraphs={
-                                    caseStudy.implementation.description
-                                }
-                            />
-                            {caseStudy.implementation.codeSnippet && (
-                                <CaseStudyCodeBlock
-                                    evidence={{
-                                        codeSnippet:
-                                            caseStudy.implementation
-                                                .codeSnippet,
-                                        codeLanguage:
-                                            caseStudy.implementation
-                                                .codeLanguage,
-                                    }}
-                                />
-                            )}
                         </div>
                     </div>
 
@@ -461,11 +452,14 @@ function CaseStudyContent({
                         }}
                     >
                         <div className="flex items-center gap-3 mb-5">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-500 font-bold text-sm font-mono">
+                                R
+                            </div>
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20">
                                 <TrendingUp className="h-4 w-4 text-emerald-500" />
                             </div>
                             <h5 className="text-base font-semibold text-foreground">
-                                Results & Impact
+                                Result
                             </h5>
                         </div>
 
@@ -481,7 +475,7 @@ function CaseStudyContent({
                             {caseStudy.impact.metrics.map((metric, i) => (
                                 <div
                                     key={i}
-                                    className="@container group relative overflow-hidden rounded-xl border border-border/50 bg-card p-4 transition-all duration-300 hover:border-emerald-500/40 hover:bg-card/70 animate-fade-up"
+                                    className="@container group relative overflow-hidden rounded-xl border border-border/50 bg-card p-4 transition-all duration-300 hover:border-emerald-500/40 hover:bg-card/70 animate-fade-up print:break-inside-avoid"
                                     style={{
                                         animationDelay: `${550 + i * 50}ms`,
                                         animationFillMode: "both",

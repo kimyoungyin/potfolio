@@ -123,3 +123,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  /* Force case study accordion panels open */
+  [role="region"][aria-hidden="true"] {
+    grid-template-rows: 1fr !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+  }
+
+  /* Kill staggered animation fill-modes that trap opacity at 0 */
+  [style*="animationFillMode"] {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}
