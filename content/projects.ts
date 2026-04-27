@@ -9,8 +9,16 @@ const placeholderCaseStudy: CaseStudy = {
     },
     impact: {
         metrics: [
-            { label: "Metric 1", value: "—", description: ["placeholder"] },
-            { label: "Metric 2", value: "—", description: ["placeholder"] },
+            {
+                label: "Metric 1",
+                value: "—",
+                description: ["placeholder"],
+            },
+            {
+                label: "Metric 2",
+                value: "—",
+                description: ["placeholder"],
+            },
         ],
         summary: ["Impact summary placeholder — 실제 내용을 입력해주세요."],
     },
@@ -769,9 +777,9 @@ const total = data?.pages[0]?.total ?? 0;`,
         githubUrl: "https://github.com/kimyoungyin/seongryung",
         challenges: [
             {
-                title: "CDN 기반 이미지 서빙 구조 개선 + 이미지 preload로 LCP 최적화",
+                title: "CDN 기반 이미지 서빙 구조 개선 + 이미지 preload + DB 워터폴 제거로 LCP 최적화",
                 summary:
-                    "메인 화면의 고해상도 책 위치 이미지가 LCP 요소로 늦게 그려지며 Slow 4G에서 LCP가 4.69s까지 지연되는 문제를, public 정적 서빙에서 Supabase Storage + ImageKit CDN로 옮겨 Cold 기준 LCP를 2.81s(약 40% 단축)까지 개선했습니다. 이어서 검색 카드→위치 상세 페이지 플로우에서는, 링크 `onMouseEnter`와 터치 환경을 고려한 `onPointerDown`에서 동일 선요청 로직을 실행해 네비게이션 이전에 이미지 요청을 미리 열었고, LCP 마커는 약 ~5.8s에서 ~4.3s로 상대 개선됐습니다.",
+                    "메인 화면의 고해상도 책 위치 이미지가 LCP 요소로 늦게 그려지며 Slow 4G에서 LCP가 4.69s까지 지연되는 문제를, public 정적 서빙에서 Supabase Storage + ImageKit CDN로 옮겨 Cold 기준 LCP를 2.81s(약 40% 단축)까지 개선했습니다. 이어서 검색 카드→위치 상세 페이지 플로우에서는, 링크 `onMouseEnter`와 터치 환경을 고려한 `onPointerDown`에서 동일 선요청 로직을 실행해 네비게이션 이전에 이미지 요청을 미리 열었고, LCP 마커는 약 ~5.8s에서 ~4.3s로 상대 개선됐습니다. 마지막으로 모달 마운트 후 useEffect에서 Server Action을 호출해 location을 확정하던 DB 조회 워터폴을 제거해, 호버 preload와 맞물려 모달 전환 직후 이미지가 즉시 렌더링되도록 개선했습니다.",
                 caseStudy: {
                     problem: [
                         "기존에는 고해상도 이미지를 Next.js `public` 디렉토리에서 직접 서빙하는 단순한 구조였습니다.",
@@ -785,6 +793,8 @@ const total = data?.pages[0]?.total ?? 0;`,
                         "캐시가 채워진 Warm 상태에서는 체감이 나아보여도, Cold Start에서는 동일 구조가 반복적으로 성능 저하를 만들었습니다.",
                         "결국, 문제의 본질은 서버 응답 속도가 아니라 전송 데이터 크기와 요청 타이밍의 결합으로 재정의했고, 이미지 전달 경로와 포맷·크기·선요청 전략을 함께 바꾸는 방향으로 Solution을 설계했습니다.",
                         "또 기존 구조에서는 검색 결과 카드 리스트에서 링크를 클릭하여 이미지를 렌더링하는 상세 페이지에 진입한 뒤(네비게이션 직후)에야 이미지 다운로드가 본격화되는 방식이었기에, 이를 해결하기 위해 '전환 전에' 같은 이미지에 대한 네트워크를 미리 요청하는 방향을 검토했습니다.",
+                        "preload 최적화 이후에도 남은 문제가 있었습니다. 모달(`@locationModal`)은 클라이언트 컴포넌트로, 마운트 후 `useEffect`에서 Server Action(`getBookLocation`)을 호출해 DB로부터 `location` 번호를 받아온 뒤에야 `<Image>`를 렌더했습니다. 이미지 자체는 이미 캐시에 있어도 DB 응답이 돌아오기 전까지는 skeleton이 표시되는 구조였습니다.",
+                        "즉 '클릭 → 모달 마운트 → useEffect → DB 조회 → location 확정 → 이미지 렌더'의 순서적 워터폴이 preload의 효과를 상쇄하고 있었습니다. `ToLocationButton`은 이미 `location` prop을 갖고 있었으므로, 이를 URL 쿼리 파라미터로 전달하면 모달이 마운트 직후 동기적으로 location을 읽을 수 있다고 판단했습니다.",
                     ],
                     solution: [
                         "1) 전달 방식 비교 및 ImageKit 채택",
@@ -803,55 +813,55 @@ const total = data?.pages[0]?.total ?? 0;`,
                         "6) ToLocationButton과 URL 정합성",
                         "`ToLocationButton`에서는 데스크톱에서 포인터가 링크 위에 올라올 때(`onMouseEnter`) 선요청을 걸고, 모바일 등 호버가 없을 수 있어 같은 핸들러를 `onPointerDown`에도 연결해 탭 직전에 네트워크를 열 수 있게 했습니다.",
                         "url은 상세에서 실제로 그려지는 변환 URL과 동일한 규칙으로 만들기 위해 `getLocationMapPreloadUrl`(내부적으로 로더와 같은 `w,q,tr` 조합)을 사용했습니다.",
+                        "7) location을 URL 쿼리 파라미터로 전달해 DB 조회 워터폴 제거",
+                        "`ToLocationButton`의 링크 href에 `?loc=N`을 추가해 모달이 마운트 직후 `useSearchParams()`로 location을 동기적으로 읽도록 변경했습니다. `loc` 파라미터가 있으면 Server Action 호출을 건너뛰고, 파라미터 없이 직접 URL에 접근하는 경우에는 기존 DB 조회 로직이 폴백으로 실행되어 hard navigation에서도 정상 동작을 유지합니다.",
                         "이러한 설계를 구조 관점에서 보면 다음과 같은 흐름으로 정리할 수 있습니다.",
                     ],
                     solutionCode: {
                         caption:
-                            "상세에서 실제로 요청되는 ImageKit 변환 URL을 로더에서 일관 생성(`buildImageKitUrl` + 기본 로더)",
-                        codeLanguage: "typescript",
-                        codeSnippet: `// imageKitLoader.ts (발췌)
-import type { ImageLoaderProps } from "next/image";
+                            "location을 URL 파라미터로 전달해 DB 조회 없이 모달 마운트 직후 이미지 렌더링",
+                        codeLanguage: "tsx",
+                        codeSnippet: `// ToLocationButton.tsx — 변경 전
+<Link href={\`/location/\${bookId}\`}>위치 보기</Link>
 
-const IK_HOST = "ik.imagekit.io";
+// ToLocationButton.tsx — 변경 후
+<Link href={\`/location/\${bookId}?loc=\${location}\`}>위치 보기</Link>
 
-export function buildImageKitUrl(
-  src: string,
-  width: number,
-  quality = 75
-): string {
-  if (src.startsWith("/")) return src;
-  try {
-    const url = new URL(src);
-    if (url.hostname === IK_HOST) {
-      url.searchParams.set("tr", \`w-\${width},q-\${quality},f-auto\`);
-      return url.toString();
-    }
-  } catch {}
-  return src;
-}
+// @locationModal/(.)location/[id]/page.tsx — 변경 후
+const searchParams = useSearchParams();
+const locFromUrl = searchParams.get("loc");
+const [location, setLocation] = useState<number | null>(
+  locFromUrl !== null ? Number(locFromUrl) : null,
+);
 
-export default function imageKitLoader({
-  src,
-  width,
-  quality,
-}: ImageLoaderProps): string {
-  return buildImageKitUrl(src, width, quality ?? 75);
-}`,
+useEffect(() => {
+  if (location !== null) return; // loc 파라미터 있으면 DB 조회 생략
+  // 직접 URL 접근 시 폴백으로 DB 조회
+  const getBookData = async () => { ... };
+  getBookData();
+}, []);`,
                     },
                     architectureIntro: [
                         "기존에는 브라우저 요청이 Next.js 서버를 거쳐 `public` 정적 이미지를 직접 내려받는 단일 경로였습니다.",
                         "개선 이후에는 브라우저가 Next.js로부터 HTML을 받고, 위치 지도는 ImageKit Edge(변환·캐시), 책 표지는 Supabase Origin으로 각각 직접 요청하는 이중 경로로 분리했습니다.",
                         "CDN 경로를 바꾸는 옵션이 아니라 preload 힌트로 요청 시점을 앞당기는 역할인 `priority`를 적용해, 전달 경로(어디서 받는가)와 요청 시점(언제 받는가)을 분리 제어할 수 있도록 하여 Cold Start 편차와 LCP 지연을 함께 줄입니다.",
                         "검색 카드에서 호버 또는 포인터 다운 시 아직 상세 라우트로 가기 전에 지도(LCP 후보)에 대한 네트워크를 시작해, 클릭·터치 이후 타임라인에서 이미지가 늦게 붙는 구간을 줄입니다.",
+                        "3단계에서는 데이터 흐름 구조를 바꿨습니다. 기존에는 '클릭 → 모달 마운트 → useEffect → DB 조회 → location 확정 → 이미지 렌더'로 이어지는 순차 워터폴이 존재했습니다. location을 URL 파라미터(`?loc=N`)로 전달함으로써 모달이 마운트되는 시점에 location이 이미 확정되어, 이미지 렌더링이 DB 응답을 기다리지 않아도 됩니다. preload로 이미지가 캐시에 올라와 있는 상태와 결합되면, 전환 직후 skeleton 없이 즉시 이미지가 표시됩니다.",
                     ],
                     diagram: {
-                        before: `flowchart LR
+                        before: `flowchart TD
 Browser[Browser] --> NextServer[Next.js Server]
-NextServer --> PublicDir[public Static Images]`,
-                        after: `flowchart LR
-Browser[Browser] --> NextHTML["Next.js HTML + preload hint (priority image)"]
-Browser --> ImageKit["ImageKit CDN Edge (Location Map)"]
-Browser --> Supabase["Supabase Storage Origin (Book Cover)"]`,
+NextServer --> PublicDir[public Static Images]
+Browser -->|"클릭 후"| Modal[Modal Mount]
+Modal -->|useEffect| ServerAction[Server Action getBookLocation]
+ServerAction -->|DB 조회| DB[(Supabase DB)]
+DB -->|location 반환| Modal
+Modal -->|location 확정 후| Image[이미지 렌더]`,
+                        after: `flowchart TD
+Browser[Browser] --> NextHTML["Next.js HTML + preload hint"]
+Browser -->|"hover/pointerdown"| IKPreload["ImageKit CDN (Preload)"]
+Browser -->|"클릭 후"| Modal["Modal Mount (location = URL params)"]
+Modal -->|"즉시"| Image["이미지 렌더 (캐시 히트)"]`,
                     },
                     implementation: {
                         description: [
@@ -859,10 +869,11 @@ Browser --> Supabase["Supabase Storage Origin (Book Cover)"]`,
                             "위치 지도 URL은 `getLocationImageSrc`로 ImageKit 엔드포인트를 사용하고, `LOCATION_MAP_IMAGE_SIZES` 상수와 `fill`을 결합해 실제 레이아웃 폭에 맞는 요청만 내려가도록 조정했습니다.",
                             "풀 페이지에서는 상단 표지(`getImageSrc`)에 `priority`를 두고 지도는 non-priority로 운영했으며, 모달 라우트에서는 지도에 `priority`를 적용해 화면 점유율에 맞게 우선순위를 분기했습니다.",
                             "`ToLocationButton`에서 `getLocationMapPreloadUrl`로 변환 URL을 잡아 `new Image()`로 선요청하며, `onMouseEnter`뿐 아니라 모바일을 고려해 `onPointerDown`에도 동일 핸들러를 연결했습니다. 목표는 전환 전에 바이트 전송을 시작해 LCP가 측정되는 순간까지의 대기를 줄이는 것입니다.",
-                            "1·2단계 모두 ‘어디서 파일을 두느냐’보다 ‘어떤 포맷·크기·언제 요청을 열 것인가’에 두고, 각각 측정 맥락에 맞는 지표로 검증했습니다.",
+                            "`ToLocationButton`의 href에 `?loc=N`을 추가하고, 모달 컴포넌트는 `useSearchParams()`로 마운트 시점에 동기적으로 location을 읽도록 변경했습니다. `useState` 초기값을 URL 파라미터로 설정하므로 `useEffect`가 실행될 필요가 없어 DB 조회 워터폴이 사라집니다. `?loc` 파라미터가 없는 직접 URL 접근이나 새로고침에서는 기존 DB 조회 폴백이 실행되어 hard navigation에서도 정상 동작합니다.",
+                            "1~3단계 모두 '어디서 파일을 두느냐'보다 '어떤 포맷·크기·언제 요청을 열 것인가, 그리고 렌더에 필요한 데이터를 언제 확정하는가'에 초점을 두고, 각각 측정 맥락에 맞는 지표로 검증했습니다.",
                         ],
                         codeLanguage: "tsx",
-                        codeSnippet: `// ToLocationButton.tsx (발췌) — 상세 진입 전 LCP 이미지 요청 시작
+                        codeSnippet: `// ToLocationButton.tsx (발췌) — preload + ?loc 파라미터 전달
 const preloadLocationMap = () => {
   const img = new Image();
   img.src = getLocationMapPreloadUrl(
@@ -875,14 +886,20 @@ const preloadLocationMap = () => {
 onMouseEnter={preloadLocationMap}
 onPointerDown={preloadLocationMap}
 
-// app/location/[id]/page.tsx (발췌)
-<Image
-  src={getLocationImageSrc(bookInfo.location)}
-  alt={bookInfo.title + "이 있는 책장"}
-  fill
-  sizes={LOCATION_MAP_IMAGE_SIZES}
-  className="object-contain"
-/>`,
+// href에 loc 파라미터 포함 — 모달이 마운트 즉시 location을 동기적으로 읽음
+<Link href={\`/location/\${bookId}?loc=\${location}\`}>위치 보기</Link>
+
+// @locationModal/(.)location/[id]/page.tsx (발췌)
+const locFromUrl = searchParams.get("loc");
+const [location, setLocation] = useState<number | null>(
+  locFromUrl !== null ? Number(locFromUrl) : null,
+);
+// loc 있으면 useEffect에서 DB 조회 생략 → 이미지 즉시 렌더
+useEffect(() => {
+  if (location !== null) return;
+  const getBookData = async () => { ... };
+  getBookData();
+}, []);`,
                     },
                     impact: {
                         metrics: [
@@ -921,10 +938,21 @@ onPointerDown={preloadLocationMap}
                                 value: "~5.8s → ~4.3s",
                                 description: ["약 25% 단축"],
                             },
+                            {
+                                label: "모달 이미지 렌더 지연 (3단계, DB 워터폴 제거)",
+                                value: "DB 조회 대기 → 즉시 렌더 (0ms)",
+                                description: [
+                                    "soft navigation 경로에서 Server Action 호출 완전 제거",
+                                    "MCP 브라우저 측정: 모달 오픈 후 ImageKit 이미지 transferSize 0B (캐시 히트, ~1ms 렌더)",
+                                    "preload(~132ms 선취득)와 맞물려 skeleton 표시 구간 사라짐",
+                                    "hard navigation(직접 URL 접근)에서는 DB 조회 폴백으로 정상 동작 유지",
+                                ],
+                            },
                         ],
                         summary: [
                             "1단계에서는 책 표지와 위치 지도의 전달 경로를 분리하고, ImageKit·`next/image`의 `priority`·`sizes`로 전송 바이트와 첫 화면 요청 시점을 줄였습니다. CDN은 최적화된 이미지를 Edge에서 전달하는 역할을 담당했습니다.",
                             "2단계에서는 상세·모달로 넘어가기 전에 LCP가 될 지도 이미지에 대한 요청을 열고, 데스크톱은 `onMouseEnter`, 터치 환경은 `onPointerDown`으로 같은 선제 로딩을 두어 클릭 이후 LCP 타임라인에서 다운로드가 뒤늦게 붙는 구간을 줄이는 데 초점을 맞췄습니다.",
+                            "3단계에서는 데이터 흐름 자체를 바꿨습니다. 모달이 마운트된 뒤 useEffect에서 Server Action으로 DB를 조회하는 순차 워터폴을 `?loc=N` URL 파라미터로 대체해, location이 마운트 시점에 이미 확정되도록 했습니다. 이미지가 preload로 캐시에 올라와 있는 상태와 결합되면 전환 직후 skeleton 없이 즉시 이미지가 표시되어, 1·2단계로 확보한 성능 여유를 실제 체감으로 연결합니다.",
                         ],
                     },
                 },
